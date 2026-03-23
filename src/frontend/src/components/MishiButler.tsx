@@ -34,6 +34,7 @@ export default function MishiButler() {
   const [input, setInput] = useState("");
   const endRef = useRef<HTMLDivElement>(null);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional scroll trigger
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [msgs]);
@@ -78,6 +79,7 @@ export default function MishiButler() {
               </div>
             </div>
             <button
+              type="button"
               onClick={() => setOpen(false)}
               className="text-gray-400 hover:text-yellow-400"
             >
@@ -88,6 +90,7 @@ export default function MishiButler() {
           <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-2">
             {msgs.map((m, i) => (
               <div
+                // biome-ignore lint/suspicious/noArrayIndexKey: pre-existing pattern
                 key={i}
                 className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
               >
@@ -137,6 +140,7 @@ export default function MishiButler() {
       )}
       {/* Toggle */}
       <button
+        type="button"
         onClick={() => setOpen(!open)}
         className="w-14 h-14 rounded-full flex items-center justify-center text-2xl"
         style={{

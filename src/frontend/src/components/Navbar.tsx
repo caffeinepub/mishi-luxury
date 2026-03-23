@@ -1,4 +1,4 @@
-import { Crown, Heart, Menu, ShoppingBag, X } from "lucide-react";
+import { Heart, Menu, ShoppingBag, X } from "lucide-react";
 import { useState } from "react";
 import { useMishi } from "../store/store";
 
@@ -17,14 +17,25 @@ export default function Navbar() {
 
   const link = (page: string, label: string) => (
     <button
+      type="button"
+      data-ocid={`nav.${page}.link`}
       onClick={() => {
         navigate(page);
         setOpen(false);
       }}
-      className={`transition-all duration-200 hover:text-yellow-400 text-sm tracking-widest uppercase font-medium ${
-        currentPage === page ? "text-yellow-400" : "text-amber-100"
-      }`}
-      style={{ fontFamily: "Inter, sans-serif" }}
+      style={{
+        fontFamily: "Inter, sans-serif",
+        fontSize: "0.8rem",
+        letterSpacing: "0.15em",
+        textTransform: "uppercase" as const,
+        fontWeight: 500,
+        color: currentPage === page ? "#06b6d4" : "#c0d8e0",
+        background: "none",
+        border: "none",
+        cursor: "pointer",
+        transition: "color 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+        padding: 0,
+      }}
     >
       {label}
     </button>
@@ -34,46 +45,33 @@ export default function Navbar() {
     <nav
       className="fixed top-0 left-0 right-0 z-50"
       style={{
-        background: "rgba(10,10,15,0.9)",
-        backdropFilter: "blur(20px)",
-        borderBottom: "1px solid rgba(212,175,55,0.4)",
+        background: "rgba(6,9,16,0.94)",
+        backdropFilter: "blur(24px)",
+        WebkitBackdropFilter: "blur(24px)",
+        borderBottom: "1px solid rgba(14,116,144,0.32)",
       }}
     >
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-        {/* Logo */}
+        {/* Logo — mixBlendMode screen removes white box on dark bg */}
         <button
+          type="button"
+          data-ocid="nav.home.link"
           onClick={() => navigate("home")}
-          className="flex items-center gap-2"
+          className="flex items-center gap-3"
+          style={{ background: "none", border: "none", cursor: "pointer" }}
         >
-          <div
-            className="w-10 h-10 rounded-full flex items-center justify-center"
+          <img
+            src="/assets/uploads/Snapchat-1589822426-1.jpg"
+            alt="MISHI"
+            className="h-9 w-auto"
             style={{
-              background: "linear-gradient(135deg, #D4AF37, #B8960C)",
-              boxShadow: "0 0 15px rgba(212,175,55,0.4)",
+              mixBlendMode: "screen",
+              filter:
+                "drop-shadow(0 0 6px rgba(212,175,55,0.45)) sepia(0.3) saturate(1.4) brightness(1.1)",
             }}
-          >
-            <span
-              style={{
-                fontFamily: "Playfair Display, serif",
-                fontWeight: 900,
-                color: "#0a0a0f",
-                fontSize: "18px",
-              }}
-            >
-              M
-            </span>
-          </div>
-          <span
-            style={{
-              fontFamily: "Playfair Display, serif",
-              fontWeight: 700,
-              fontSize: "22px",
-              background: "linear-gradient(135deg, #D4AF37, #F0D060)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-            }}
-          >
-            MISHI
+          />
+          <span className="mishi-brand-title" style={{ fontSize: "28px" }}>
+            Mishi
           </span>
         </button>
 
@@ -89,20 +87,29 @@ export default function Navbar() {
         {/* Icons */}
         <div className="flex items-center gap-4">
           <button
+            type="button"
+            data-ocid="nav.wishlist.link"
             onClick={() => navigate("wishlist")}
-            className="relative text-amber-100 hover:text-yellow-400 transition-colors"
+            className="relative"
+            style={{
+              color: "#c0d8e0",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              transition: "color 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+            }}
           >
             <Heart
               size={22}
-              fill={wishlist.length > 0 ? "#D4AF37" : "none"}
-              color={wishlist.length > 0 ? "#D4AF37" : undefined}
+              fill={wishlist.length > 0 ? "#06b6d4" : "none"}
+              color={wishlist.length > 0 ? "#06b6d4" : "currentColor"}
             />
             {wishlist.length > 0 && (
               <span
                 className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full text-xs flex items-center justify-center"
                 style={{
-                  background: "#D4AF37",
-                  color: "#0a0a0f",
+                  background: "#0e7490",
+                  color: "#e8f0f8",
                   fontSize: "10px",
                   fontWeight: 700,
                 }}
@@ -111,17 +118,27 @@ export default function Navbar() {
               </span>
             )}
           </button>
+
           <button
+            type="button"
+            data-ocid="nav.cart.link"
             onClick={() => navigate("cart")}
-            className="relative text-amber-100 hover:text-yellow-400 transition-colors"
+            className="relative"
+            style={{
+              color: "#c0d8e0",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              transition: "color 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+            }}
           >
             <ShoppingBag size={22} />
             {cartCount > 0 && (
               <span
                 className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full text-xs flex items-center justify-center"
                 style={{
-                  background: "#D4AF37",
-                  color: "#0a0a0f",
+                  background: "#0e7490",
+                  color: "#e8f0f8",
                   fontSize: "10px",
                   fontWeight: 700,
                 }}
@@ -130,8 +147,11 @@ export default function Navbar() {
               </span>
             )}
           </button>
+
           {isLoggedIn ? (
             <button
+              type="button"
+              data-ocid="nav.logout.button"
               onClick={() => {
                 logout();
                 navigate("home");
@@ -142,16 +162,26 @@ export default function Navbar() {
             </button>
           ) : (
             <button
+              type="button"
+              data-ocid="nav.login.button"
               onClick={() => navigate("login")}
               className="btn-gold text-xs py-1.5 px-3"
             >
-              <Crown size={14} className="inline mr-1" />
               Login
             </button>
           )}
+
           <button
-            className="md:hidden text-amber-100"
+            type="button"
+            className="md:hidden"
+            style={{
+              color: "#c0d8e0",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+            }}
             onClick={() => setOpen(!open)}
+            data-ocid="nav.menu.toggle"
           >
             {open ? <X size={24} /> : <Menu size={24} />}
           </button>
@@ -162,7 +192,7 @@ export default function Navbar() {
       {open && (
         <div
           className="md:hidden px-6 pb-4 flex flex-col gap-4"
-          style={{ borderTop: "1px solid rgba(212,175,55,0.2)" }}
+          style={{ borderTop: "1px solid rgba(14,116,144,0.18)" }}
         >
           {link("home", "Home")}
           {link("shop", "Shop")}

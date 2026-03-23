@@ -9,12 +9,12 @@ import PrimaryAdminPage from "./pages/PrimaryAdminPage";
 import ProductDetailPage from "./pages/ProductDetailPage";
 import SecondaryAdminPage from "./pages/SecondaryAdminPage";
 import ShopPage from "./pages/ShopPage";
+import VaultPage from "./pages/VaultPage";
 import WishlistPage from "./pages/WishlistPage";
 import { useMishi } from "./store/store";
 
 function PageRouter() {
   const { currentPage } = useMishi();
-
   if (currentPage === "home") return <HomePage />;
   if (currentPage === "shop") return <ShopPage />;
   if (currentPage.startsWith("product-")) {
@@ -26,15 +26,22 @@ function PageRouter() {
   if (currentPage === "wishlist") return <WishlistPage />;
   if (currentPage === "legacy") return <LegacyPage />;
   if (currentPage === "login") return <LoginPage />;
+  if (currentPage === "vault") return <VaultPage />;
   if (currentPage === "admin") return <PrimaryAdminPage />;
   if (currentPage === "admin-secondary") return <SecondaryAdminPage />;
-
   return <HomePage />;
+}
+
+function handleCaffeineLinkEnter(e: React.MouseEvent<HTMLAnchorElement>) {
+  e.currentTarget.style.color = "#06b6d4";
+}
+function handleCaffeineLinkLeave(e: React.MouseEvent<HTMLAnchorElement>) {
+  e.currentTarget.style.color = "#2e404a";
 }
 
 export default function App() {
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0a0f" }}>
+    <div style={{ minHeight: "100vh", background: "#080b12" }}>
       <Navbar />
       <main>
         <PageRouter />
@@ -45,23 +52,82 @@ export default function App() {
       <footer
         className="py-12 px-6 text-center"
         style={{
-          borderTop: "1px solid rgba(212,175,55,0.2)",
-          background: "rgba(0,0,0,0.5)",
+          borderTop: "1px solid rgba(14,116,144,0.18)",
+          background: "rgba(4,6,12,0.7)",
         }}
       >
+        {/* Logo — screen blend removes white box on dark bg */}
+        <div className="flex flex-col items-center gap-2 mb-4">
+          <img
+            src="/assets/uploads/Snapchat-1589822426-1.jpg"
+            alt="MISHI"
+            className="h-12 w-auto"
+            style={{
+              mixBlendMode: "screen",
+              filter:
+                "drop-shadow(0 0 10px rgba(212,175,55,0.4)) sepia(0.3) saturate(1.4) brightness(1.1)",
+            }}
+          />
+          <span
+            className="mishi-brand-title"
+            style={{ fontSize: "2.2rem", lineHeight: "1" }}
+          >
+            Mishi
+          </span>
+        </div>
+
         <p
-          style={{ fontFamily: "Playfair Display, serif", fontSize: "1.8rem" }}
-          className="gold-gradient mb-2"
+          style={{
+            fontSize: "0.7rem",
+            letterSpacing: "0.28em",
+            textTransform: "uppercase",
+            color: "#c4b5fd",
+            marginBottom: "0.5rem",
+            fontStyle: "italic",
+          }}
         >
-          MISHI
+          Where Love Unites Empires
         </p>
-        <p className="text-gray-500 text-xs tracking-widest uppercase mb-4">
-          Where Royalty Meets Craftsmanship · Est. 2025 · Mission 2028
+        <p
+          style={{
+            fontSize: "0.65rem",
+            letterSpacing: "0.2em",
+            textTransform: "uppercase",
+            color: "#3d5a65",
+            marginBottom: "1rem",
+          }}
+        >
+          Est. 2025 · Mission 2028
         </p>
+
         <div className="royal-divider w-48 mx-auto mb-4" />
-        <p className="text-gray-600 text-xs">
-          Sterling Silver Ornaments &amp; Royal Ethnic Wear &nbsp;·&nbsp; © 2025
-          MISHI Luxury. All rights reserved.
+
+        <p
+          style={{
+            fontSize: "0.75rem",
+            color: "#3d5060",
+            marginBottom: "0.5rem",
+          }}
+        >
+          Sterling Silver Ornaments &amp; Royal Ethnic Wear &nbsp;·&nbsp; ©{" "}
+          {new Date().getFullYear()} MISHI Luxury. All rights reserved.
+        </p>
+        <p
+          style={{ fontSize: "0.7rem", marginTop: "0.75rem", color: "#2e404a" }}
+        >
+          Built with love using{" "}
+          <a
+            href={`https://caffeine.ai?utm_source=caffeine-footer&utm_medium=referral&utm_content=${encodeURIComponent(
+              typeof window !== "undefined" ? window.location.hostname : "",
+            )}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: "#2e404a", transition: "color 0.5s ease" }}
+            onMouseEnter={handleCaffeineLinkEnter}
+            onMouseLeave={handleCaffeineLinkLeave}
+          >
+            caffeine.ai
+          </a>
         </p>
       </footer>
     </div>

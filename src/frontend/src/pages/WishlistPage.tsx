@@ -43,6 +43,7 @@ export default function WishlistPage() {
             Save pieces that speak to your royal soul
           </p>
           <button
+            type="button"
             onClick={() => navigate("shop")}
             className="btn-gold px-8 py-3"
           >
@@ -59,6 +60,9 @@ export default function WishlistPage() {
                   className="relative overflow-hidden cursor-pointer"
                   style={{ aspectRatio: "4/5" }}
                   onClick={() => navigate(`product-${p.id}`)}
+                  onKeyDown={(e) =>
+                    e.key === "Enter" && navigate(`product-${p.id}`)
+                  }
                 >
                   <img
                     src={p.imageUrl}
@@ -66,6 +70,7 @@ export default function WishlistPage() {
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                   <button
+                    type="button"
                     onClick={(e) => {
                       e.stopPropagation();
                       toggleWishlist(p.id);
@@ -98,6 +103,7 @@ export default function WishlistPage() {
                     ₹{price.toLocaleString("en-IN")}
                   </p>
                   <button
+                    type="button"
                     onClick={() => addToCart(p.id, 1)}
                     className="w-full btn-outline-gold text-xs py-2 flex items-center justify-center gap-2"
                   >

@@ -1,9 +1,10 @@
 import {
   BarChart3,
   Crown,
-  Edit3,
   Package,
   PlusCircle,
+  Save,
+  Settings,
   ShoppingCart,
   TrendingUp,
 } from "lucide-react";
@@ -36,9 +37,9 @@ export default function PrimaryAdminPage() {
     advanceOrderStage,
     approveOrder,
   } = useMishi();
-  const [tab, setTab] = useState<"analytics" | "orders" | "products" | "add">(
-    "analytics",
-  );
+  const [tab, setTab] = useState<
+    "analytics" | "orders" | "products" | "add" | "cms"
+  >("analytics");
   const [rate, setRate] = useState(String(silverRate));
   const [newProduct, setNewProduct] = useState({
     name: "",
@@ -51,14 +52,44 @@ export default function PrimaryAdminPage() {
   });
   const [sizes, setSizes] = useState("");
 
+  // CMS fields
+  const [cmsTagline, setCmsTagline] = useState(
+    () =>
+      localStorage.getItem("mishi-cms-tagline") ||
+      "Where Royalty Meets Craftsmanship",
+  );
+  const [cmsSubTagline, setCmsSubTagline] = useState(
+    () =>
+      localStorage.getItem("mishi-cms-subtagline") ||
+      "Sterling Silver Ornaments & Royal Ethnic Wear — crafted for those who wear their legacy",
+  );
+  const [cmsAbout, setCmsAbout] = useState(
+    () =>
+      localStorage.getItem("mishi-cms-about") ||
+      "Born from an unwavering dream, MISHI is more than a brand — it is a dynasty in the making. Founded on the twin pillars of Purity and Heritage.",
+  );
+  const [cmsContact, setCmsContact] = useState(
+    () =>
+      localStorage.getItem("mishi-cms-contact") ||
+      "mishiofficial1701@gmail.com · Instagram: @mishiluxury",
+  );
+  const [cmsPrimaryCode, setCmsPrimaryCode] = useState(
+    () => localStorage.getItem("mishi-cms-primary-code") || "PYARADUDU",
+  );
+  const [cmsSecondaryCode, setCmsSecondaryCode] = useState(
+    () => localStorage.getItem("mishi-cms-secondary-code") || "SHRIMATIJI",
+  );
+  const [cmsSaved, setCmsSaved] = useState(false);
+
   if (adminLevel !== "primary")
     return (
       <div className="min-h-screen pt-24 flex items-center justify-center">
         <div className="glass-card p-10 text-center">
-          <Crown className="text-yellow-400 mx-auto mb-3" size={40} />
+          <Crown className="text-cyan-400 mx-auto mb-3" size={40} />
           <p className="text-gray-300">Primary Admin access required.</p>
           <button
-            onClick={() => navigate("login")}
+            type="button"
+            onClick={() => navigate("vault")}
             className="btn-gold px-8 py-3 mt-4"
           >
             Login as Admin
@@ -111,17 +142,29 @@ export default function PrimaryAdminPage() {
     alert("Product added!");
   };
 
+  const saveAllCms = () => {
+    localStorage.setItem("mishi-cms-tagline", cmsTagline);
+    localStorage.setItem("mishi-cms-subtagline", cmsSubTagline);
+    localStorage.setItem("mishi-cms-about", cmsAbout);
+    localStorage.setItem("mishi-cms-contact", cmsContact);
+    localStorage.setItem("mishi-cms-primary-code", cmsPrimaryCode);
+    localStorage.setItem("mishi-cms-secondary-code", cmsSecondaryCode);
+    setCmsSaved(true);
+    setTimeout(() => setCmsSaved(false), 3000);
+  };
+
   const tabs = [
     { key: "analytics", label: "Analytics", icon: <BarChart3 size={16} /> },
     { key: "orders", label: "Orders", icon: <ShoppingCart size={16} /> },
     { key: "products", label: "Products", icon: <Package size={16} /> },
     { key: "add", label: "Add Product", icon: <PlusCircle size={16} /> },
+    { key: "cms", label: "CMS", icon: <Settings size={16} /> },
   ] as const;
 
   return (
     <div className="min-h-screen pt-24 px-6 pb-20 max-w-7xl mx-auto">
       <div className="flex items-center gap-3 mb-8">
-        <Crown className="text-yellow-400" size={32} />
+        <Crown className="text-cyan-400" size={32} />
         <div>
           <h1
             style={{
@@ -146,10 +189,11 @@ export default function PrimaryAdminPage() {
         <input
           value={rate}
           onChange={(e) => setRate(e.target.value)}
-          className="bg-transparent border-b border-yellow-400 text-yellow-400 font-bold text-xl outline-none w-24 text-center"
+          className="bg-transparent border-b border-cyan-400 text-cyan-400 font-bold text-xl outline-none w-24 text-center"
         />
         <span className="text-gray-400 text-sm">₹/gram</span>
         <button
+          type="button"
           onClick={() => setSilverRate(Number.parseInt(rate) || silverRate)}
           className="btn-gold text-sm py-2 px-5"
         >
@@ -164,6 +208,7 @@ export default function PrimaryAdminPage() {
       <div className="flex gap-2 mb-6 flex-wrap">
         {tabs.map((t) => (
           <button
+            type="button"
             key={t.key}
             onClick={() => setTab(t.key)}
             className={`flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition-all ${
@@ -206,8 +251,9 @@ export default function PrimaryAdminPage() {
                 sub: "Palace Delivery",
               },
             ].map((stat, i) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: pre-existing pattern
               <div key={i} className="glass-card p-6">
-                <div className="gold-text mb-3">{stat.icon}</div>
+                <div className="text-cyan-400 mb-3">{stat.icon}</div>
                 <p className="text-gray-400 text-xs uppercase tracking-widest">
                   {stat.label}
                 </p>
@@ -216,7 +262,7 @@ export default function PrimaryAdminPage() {
                     fontFamily: "Playfair Display, serif",
                     fontSize: "2rem",
                   }}
-                  className="text-amber-100 my-1"
+                  className="text-blue-100 my-1"
                 >
                   {stat.value}
                 </p>
@@ -226,20 +272,20 @@ export default function PrimaryAdminPage() {
           </div>
           <div className="glass-card p-6">
             <h3
-              className="text-amber-100 font-semibold mb-4"
+              className="text-blue-100 font-semibold mb-4"
               style={{ fontFamily: "Playfair Display, serif" }}
             >
               Product Overview
             </h3>
             <p className="text-gray-400 text-sm">
               Total Products:{" "}
-              <span className="gold-text">{products.length}</span> &nbsp;·&nbsp;
-              Active:{" "}
+              <span className="text-cyan-400">{products.length}</span>{" "}
+              &nbsp;·&nbsp; Active:{" "}
               <span className="text-green-400">
                 {products.filter((p) => p.isActive).length}
               </span>{" "}
               &nbsp;·&nbsp; Silver Items:{" "}
-              <span className="text-yellow-400">
+              <span className="text-cyan-400">
                 {products.filter((p) => p.category === "silver").length}
               </span>{" "}
               &nbsp;·&nbsp; Ethnic Wear:{" "}
@@ -263,7 +309,7 @@ export default function PrimaryAdminPage() {
             <div key={o.id} className="glass-card p-5">
               <div className="flex flex-wrap justify-between items-start gap-4">
                 <div>
-                  <p className="text-amber-100 font-semibold">Order #{o.id}</p>
+                  <p className="text-blue-100 font-semibold">Order #{o.id}</p>
                   <p className="text-gray-400 text-sm">
                     {new Date(o.placedAt).toLocaleDateString("en-IN")}
                   </p>
@@ -272,11 +318,15 @@ export default function PrimaryAdminPage() {
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="gold-text font-bold text-lg">
+                  <p className="text-cyan-400 font-bold text-lg">
                     ₹{o.totalAmount.toLocaleString("en-IN")}
                   </p>
                   <span
-                    className={`text-xs px-2 py-1 rounded mt-1 inline-block ${o.isApproved ? "bg-green-900/50 text-green-400" : "bg-yellow-900/30 text-yellow-400"}`}
+                    className={`text-xs px-2 py-1 rounded mt-1 inline-block ${
+                      o.isApproved
+                        ? "bg-green-900/50 text-green-400"
+                        : "bg-yellow-900/30 text-yellow-400"
+                    }`}
                   >
                     {o.isApproved ? "Approved" : "Pending"}
                   </span>
@@ -285,10 +335,11 @@ export default function PrimaryAdminPage() {
               <div className="flex flex-wrap gap-2 mt-4">
                 <span className="text-xs text-gray-400 mr-2 self-center">
                   Stage:{" "}
-                  <span className="gold-text">{STAGE_LABELS[o.stage]}</span>
+                  <span className="text-cyan-400">{STAGE_LABELS[o.stage]}</span>
                 </span>
                 {!o.isApproved && (
                   <button
+                    type="button"
                     onClick={() => approveOrder(o.id)}
                     className="btn-gold text-xs py-1 px-3"
                   >
@@ -297,6 +348,7 @@ export default function PrimaryAdminPage() {
                 )}
                 {o.stage !== "palaceDelivery" && (
                   <button
+                    type="button"
                     onClick={() => advanceOrderStage(o.id)}
                     className="btn-outline-gold text-xs py-1 px-3"
                   >
@@ -320,7 +372,7 @@ export default function PrimaryAdminPage() {
                 className="w-16 h-16 object-cover rounded-lg flex-shrink-0"
               />
               <div className="flex-1 min-w-0">
-                <p className="text-amber-100 font-medium">{p.name}</p>
+                <p className="text-blue-100 font-medium">{p.name}</p>
                 <p className="text-xs text-gray-400">
                   {p.category === "silver" ? "Sterling Silver" : "Ethnic Wear"}{" "}
                   &nbsp;·&nbsp; Stock: {p.stock}
@@ -328,8 +380,13 @@ export default function PrimaryAdminPage() {
               </div>
               <div className="flex gap-2 flex-shrink-0">
                 <button
+                  type="button"
                   onClick={() => updateProduct(p.id, { isActive: !p.isActive })}
-                  className={`text-xs px-3 py-1 rounded border ${p.isActive ? "border-red-500 text-red-400 hover:bg-red-900/30" : "border-green-500 text-green-400 hover:bg-green-900/30"}`}
+                  className={`text-xs px-3 py-1 rounded border ${
+                    p.isActive
+                      ? "border-red-500 text-red-400 hover:bg-red-900/30"
+                      : "border-green-500 text-green-400 hover:bg-green-900/30"
+                  }`}
                 >
                   {p.isActive ? "Deactivate" : "Activate"}
                 </button>
@@ -344,7 +401,7 @@ export default function PrimaryAdminPage() {
         <div className="glass-card p-8 max-w-xl">
           <h3
             style={{ fontFamily: "Playfair Display, serif" }}
-            className="text-xl text-amber-100 mb-6"
+            className="text-xl text-blue-100 mb-6"
           >
             Add New Product
           </h3>
@@ -382,29 +439,37 @@ export default function PrimaryAdminPage() {
               },
             ].map((f) => (
               <div key={f.key}>
-                <label className="text-xs text-gray-400 uppercase tracking-widest block mb-1">
+                <label
+                  htmlFor={f.key}
+                  className="text-xs text-gray-400 uppercase tracking-widest block mb-1"
+                >
                   {f.label}
                 </label>
                 <input
+                  id={f.key}
                   value={(newProduct as Record<string, string>)[f.key]}
                   onChange={(e) =>
                     setNewProduct({ ...newProduct, [f.key]: e.target.value })
                   }
                   type={f.type}
                   placeholder={f.placeholder}
-                  className="w-full bg-transparent text-amber-100 outline-none text-sm p-3"
+                  className="w-full bg-transparent text-blue-100 outline-none text-sm p-3"
                   style={{
-                    border: "1px solid rgba(212,175,55,0.3)",
+                    border: "1px solid rgba(14,116,144,0.3)",
                     borderRadius: "8px",
                   }}
                 />
               </div>
             ))}
             <div>
-              <label className="text-xs text-gray-400 uppercase tracking-widest block mb-1">
+              <label
+                htmlFor="add-category"
+                className="text-xs text-gray-400 uppercase tracking-widest block mb-1"
+              >
                 Category
               </label>
               <select
+                id="add-category"
                 value={newProduct.category}
                 onChange={(e) =>
                   setNewProduct({
@@ -412,8 +477,8 @@ export default function PrimaryAdminPage() {
                     category: e.target.value as "silver" | "ethnic",
                   })
                 }
-                className="w-full bg-gray-900 text-amber-100 outline-none text-sm p-3 rounded-lg"
-                style={{ border: "1px solid rgba(212,175,55,0.3)" }}
+                className="w-full bg-gray-900 text-blue-100 outline-none text-sm p-3 rounded-lg"
+                style={{ border: "1px solid rgba(14,116,144,0.3)" }}
               >
                 <option value="silver">Sterling Silver Ornaments</option>
                 <option value="ethnic">Royal Ethnic Wear</option>
@@ -421,10 +486,14 @@ export default function PrimaryAdminPage() {
             </div>
             {newProduct.category === "silver" && (
               <div>
-                <label className="text-xs text-gray-400 uppercase tracking-widest block mb-1">
+                <label
+                  htmlFor="silver-weight"
+                  className="text-xs text-gray-400 uppercase tracking-widest block mb-1"
+                >
                   Silver Weight (grams)
                 </label>
                 <input
+                  id="silver-weight"
                   value={newProduct.silverWeight}
                   onChange={(e) =>
                     setNewProduct({
@@ -434,9 +503,9 @@ export default function PrimaryAdminPage() {
                   }
                   type="number"
                   placeholder="e.g. 15"
-                  className="w-full bg-transparent text-amber-100 outline-none text-sm p-3"
+                  className="w-full bg-transparent text-blue-100 outline-none text-sm p-3"
                   style={{
-                    border: "1px solid rgba(212,175,55,0.3)",
+                    border: "1px solid rgba(14,116,144,0.3)",
                     borderRadius: "8px",
                   }}
                 />
@@ -444,22 +513,27 @@ export default function PrimaryAdminPage() {
             )}
             {newProduct.category === "ethnic" && (
               <div>
-                <label className="text-xs text-gray-400 uppercase tracking-widest block mb-1">
+                <label
+                  htmlFor="sizes-input"
+                  className="text-xs text-gray-400 uppercase tracking-widest block mb-1"
+                >
                   Sizes (comma-separated)
                 </label>
                 <input
+                  id="sizes-input"
                   value={sizes}
                   onChange={(e) => setSizes(e.target.value)}
                   placeholder="XS, S, M, L, XL"
-                  className="w-full bg-transparent text-amber-100 outline-none text-sm p-3"
+                  className="w-full bg-transparent text-blue-100 outline-none text-sm p-3"
                   style={{
-                    border: "1px solid rgba(212,175,55,0.3)",
+                    border: "1px solid rgba(14,116,144,0.3)",
                     borderRadius: "8px",
                   }}
                 />
               </div>
             )}
             <button
+              type="button"
               onClick={handleAddProduct}
               className="btn-gold w-full py-3 mt-2"
             >
@@ -467,6 +541,185 @@ export default function PrimaryAdminPage() {
               Add Product
             </button>
           </div>
+        </div>
+      )}
+
+      {/* CMS Tab */}
+      {tab === "cms" && (
+        <div className="space-y-6 max-w-2xl">
+          {cmsSaved && (
+            <div
+              data-ocid="cms.success_state"
+              className="glass-card p-4 text-center"
+              style={{ borderColor: "rgba(34,197,94,0.5)" }}
+            >
+              <p className="text-green-400 font-medium">
+                ✓ Changes saved and published!
+              </p>
+            </div>
+          )}
+
+          <div className="glass-card p-6">
+            <h3
+              style={{ fontFamily: "Playfair Display, serif" }}
+              className="text-lg text-blue-100 mb-1"
+            >
+              Website Content
+            </h3>
+            <p className="text-gray-500 text-xs mb-5">
+              Edit homepage text and brand messaging
+            </p>
+
+            <div className="space-y-5">
+              <div>
+                <label
+                  htmlFor="cms-tagline"
+                  className="text-xs text-gray-400 uppercase tracking-widest block mb-2"
+                >
+                  Hero Main Tagline
+                </label>
+                <input
+                  id="cms-tagline"
+                  data-ocid="cms.tagline.input"
+                  type="text"
+                  value={cmsTagline}
+                  onChange={(e) => setCmsTagline(e.target.value)}
+                  className="w-full bg-transparent text-blue-100 outline-none text-sm p-3"
+                  style={{
+                    border: "1px solid rgba(14,116,144,0.3)",
+                    borderRadius: "8px",
+                  }}
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="cms-subtagline"
+                  className="text-xs text-gray-400 uppercase tracking-widest block mb-2"
+                >
+                  Hero Sub-Tagline
+                </label>
+                <textarea
+                  id="cms-subtagline"
+                  data-ocid="cms.subtagline.textarea"
+                  value={cmsSubTagline}
+                  onChange={(e) => setCmsSubTagline(e.target.value)}
+                  rows={2}
+                  className="w-full bg-transparent text-blue-100 outline-none text-sm p-3 resize-none"
+                  style={{
+                    border: "1px solid rgba(14,116,144,0.3)",
+                    borderRadius: "8px",
+                  }}
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="cms-about"
+                  className="text-xs text-gray-400 uppercase tracking-widest block mb-2"
+                >
+                  About Us Text
+                </label>
+                <textarea
+                  id="cms-about"
+                  data-ocid="cms.about.textarea"
+                  value={cmsAbout}
+                  onChange={(e) => setCmsAbout(e.target.value)}
+                  rows={4}
+                  className="w-full bg-transparent text-blue-100 outline-none text-sm p-3 resize-none"
+                  style={{
+                    border: "1px solid rgba(14,116,144,0.3)",
+                    borderRadius: "8px",
+                  }}
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="cms-contact"
+                  className="text-xs text-gray-400 uppercase tracking-widest block mb-2"
+                >
+                  Contact Info
+                </label>
+                <input
+                  id="cms-contact"
+                  data-ocid="cms.contact.input"
+                  type="text"
+                  value={cmsContact}
+                  onChange={(e) => setCmsContact(e.target.value)}
+                  className="w-full bg-transparent text-blue-100 outline-none text-sm p-3"
+                  style={{
+                    border: "1px solid rgba(14,116,144,0.3)",
+                    borderRadius: "8px",
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="glass-card p-6">
+            <h3
+              style={{ fontFamily: "Playfair Display, serif" }}
+              className="text-lg text-blue-100 mb-1"
+            >
+              Admin Code Management
+            </h3>
+            <p className="text-gray-500 text-xs mb-5">
+              Update vault access codes. Keep these secret.
+            </p>
+
+            <div className="space-y-4">
+              <div>
+                <label
+                  htmlFor="cms-primary-code"
+                  className="text-xs text-gray-400 uppercase tracking-widest block mb-2"
+                >
+                  Primary Admin Code
+                </label>
+                <input
+                  id="cms-primary-code"
+                  data-ocid="cms.primary_code.input"
+                  type="password"
+                  value={cmsPrimaryCode}
+                  onChange={(e) => setCmsPrimaryCode(e.target.value)}
+                  className="w-full bg-transparent text-blue-100 outline-none text-sm p-3"
+                  style={{
+                    border: "1px solid rgba(14,116,144,0.3)",
+                    borderRadius: "8px",
+                  }}
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="cms-secondary-code"
+                  className="text-xs text-gray-400 uppercase tracking-widest block mb-2"
+                >
+                  Secondary Admin Code (Shrimati Ji)
+                </label>
+                <input
+                  id="cms-secondary-code"
+                  data-ocid="cms.secondary_code.input"
+                  type="password"
+                  value={cmsSecondaryCode}
+                  onChange={(e) => setCmsSecondaryCode(e.target.value)}
+                  className="w-full bg-transparent text-blue-100 outline-none text-sm p-3"
+                  style={{
+                    border: "1px solid rgba(14,116,144,0.3)",
+                    borderRadius: "8px",
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            data-ocid="cms.save.primary_button"
+            onClick={saveAllCms}
+            className="btn-gold w-full py-3 flex items-center justify-center gap-2"
+          >
+            <Save size={16} /> Global Save &amp; Publish All Changes
+          </button>
         </div>
       )}
     </div>

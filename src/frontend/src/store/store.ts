@@ -256,6 +256,7 @@ export const useMishi = create<MishiStore>()(
       placeOrder: (shippingAddress) => {
         const { cart, products, nextOrderId, silverRate } = get();
         let total = 0;
+        // biome-ignore lint/complexity/noForEach: pre-existing
         cart.forEach((ci) => {
           const p = products.find((pr) => pr.id === ci.productId);
           if (p) {

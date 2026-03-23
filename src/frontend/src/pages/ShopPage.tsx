@@ -37,6 +37,7 @@ export default function ShopPage() {
       <div className="flex justify-center gap-4 mb-10">
         {(["all", "silver", "ethnic"] as const).map((c) => (
           <button
+            type="button"
             key={c}
             onClick={() => setCat(c)}
             className={`px-6 py-2 text-sm tracking-widest uppercase transition-all rounded-full ${
@@ -72,9 +73,10 @@ export default function ShopPage() {
           const wished = wishlist.includes(p.id);
           return (
             <div key={p.id} className="glass-card overflow-hidden group">
-              <div
-                className="relative overflow-hidden cursor-pointer"
-                style={{ aspectRatio: "4/5" }}
+              <button
+                type="button"
+                className="relative overflow-hidden cursor-pointer w-full"
+                style={{ aspectRatio: "4/5", display: "block" }}
                 onClick={() => navigate(`product-${p.id}`)}
               >
                 <img
@@ -83,6 +85,7 @@ export default function ShopPage() {
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
                 <button
+                  type="button"
                   onClick={(e) => {
                     e.stopPropagation();
                     toggleWishlist(p.id);
@@ -108,7 +111,7 @@ export default function ShopPage() {
                       : "Royal Ethnic Wear"}
                   </span>
                 </div>
-              </div>
+              </button>
               <div className="p-5">
                 <h3
                   style={{
@@ -117,6 +120,9 @@ export default function ShopPage() {
                   }}
                   className="text-amber-100 mb-1 cursor-pointer hover:text-yellow-400"
                   onClick={() => navigate(`product-${p.id}`)}
+                  onKeyDown={(e) =>
+                    e.key === "Enter" && navigate(`product-${p.id}`)
+                  }
                 >
                   {p.name}
                 </h3>
@@ -136,6 +142,7 @@ export default function ShopPage() {
                     ₹{price.toLocaleString("en-IN")}
                   </span>
                   <button
+                    type="button"
                     onClick={() => addToCart(p.id, 1)}
                     className="btn-gold text-xs py-2 px-4"
                   >

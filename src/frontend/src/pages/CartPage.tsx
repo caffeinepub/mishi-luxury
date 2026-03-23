@@ -64,12 +64,14 @@ export default function CartPage() {
             utmost care.
           </p>
           <button
+            type="button"
             onClick={() => navigate("orders")}
             className="btn-gold w-full py-3 mb-3"
           >
             Track My Order
           </button>
           <button
+            type="button"
             onClick={() => navigate("shop")}
             className="btn-outline-gold w-full py-3"
           >
@@ -94,6 +96,7 @@ export default function CartPage() {
             Add royal pieces to your collection
           </p>
           <button
+            type="button"
             onClick={() => navigate("shop")}
             className="btn-gold px-8 py-3"
           >
@@ -116,6 +119,7 @@ export default function CartPage() {
           {enriched.map(
             (item, i) =>
               item.product && (
+                // biome-ignore lint/suspicious/noArrayIndexKey: pre-existing pattern
                 <div key={i} className="glass-card p-4 flex gap-4">
                   <img
                     src={item.product.imageUrl}
@@ -143,6 +147,7 @@ export default function CartPage() {
                     <div className="flex items-center gap-3 mt-2">
                       <div className="flex items-center glass-card rounded overflow-hidden">
                         <button
+                          type="button"
                           onClick={() =>
                             updateCartQty(
                               item.productId,
@@ -158,6 +163,7 @@ export default function CartPage() {
                           {item.quantity}
                         </span>
                         <button
+                          type="button"
                           onClick={() =>
                             updateCartQty(
                               item.productId,
@@ -171,6 +177,7 @@ export default function CartPage() {
                         </button>
                       </div>
                       <button
+                        type="button"
                         onClick={() =>
                           removeFromCart(item.productId, item.selectedSize)
                         }
@@ -202,6 +209,7 @@ export default function CartPage() {
               {enriched.map(
                 (item, i) =>
                   item.product && (
+                    // biome-ignore lint/suspicious/noArrayIndexKey: pre-existing pattern
                     <div key={i} className="flex justify-between text-sm">
                       <span className="text-gray-400">
                         {item.product.name} ×{item.quantity}
@@ -242,6 +250,7 @@ export default function CartPage() {
               }}
             />
             <button
+              type="button"
               onClick={handleOrder}
               disabled={!address.trim()}
               className="btn-gold w-full py-3 mt-3 disabled:opacity-50 disabled:cursor-not-allowed"

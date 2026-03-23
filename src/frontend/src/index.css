@@ -1,19 +1,27 @@
-@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Inter:wght@300;400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Great+Vibes&family=Alex+Brush&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Inter:wght@300;400;500;600&display=swap");
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
+  --teal: #0e7490;
+  --teal-light: #06b6d4;
+  --teal-dim: rgba(14, 116, 144, 0.28);
+  --lavender: #7c3aed;
+  --lavender-light: #a78bfa;
+  --lavender-soft: #c4b5fd;
+  --lavender-dim: rgba(167, 139, 250, 0.12);
   --gold: #d4af37;
-  --gold-light: #f0d060;
-  --gold-dim: rgba(212, 175, 55, 0.3);
-  --purple: #4b0082;
-  --purple-light: #7b2fbe;
-  --bg: #0a0a0f;
-  --bg2: #0f0f1a;
-  --glass: rgba(10, 10, 20, 0.75);
-  --glass-border: rgba(212, 175, 55, 0.6);
+  --silver-teal: #c0e8ef;
+  --bg: #080b12;
+  --bg2: #0d1120;
+  --glass: rgba(6, 9, 18, 0.82);
+  --glass-border: rgba(14, 116, 144, 0.38);
+
+  /* Legacy aliases */
+  --gold-light: var(--lavender-light);
+  --gold-dim: var(--teal-dim);
 }
 
 * {
@@ -24,11 +32,14 @@
 
 body {
   background-color: var(--bg);
-  color: #f0e8d0;
+  color: #e8f0f8;
   font-family: "Inter", sans-serif;
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
+/* ─── Typography ─────────────────────────────────────────── */
 .font-royal {
   font-family: "Playfair Display", serif;
 }
@@ -36,79 +47,155 @@ body {
   font-family: "Cormorant Garamond", serif;
 }
 
+/* MISHI brand title — METALLIC GOLD CURSIVE SIGNATURE */
+.mishi-brand-title {
+  font-family: "Great Vibes", "Alex Brush", cursive;
+  background: linear-gradient(
+    135deg,
+    #c9a84c 0%,
+    #f5d98b 25%,
+    #d4af37 45%,
+    #fceab0 60%,
+    #b8860b 80%,
+    #e8c84a 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 18px rgba(212, 175, 55, 0.3));
+}
+
+/* Primary tagline — soft lavender, spaced uppercase */
+.tagline-lavender {
+  color: #c4b5fd;
+  letter-spacing: 0.32em;
+  text-shadow: 0 0 22px rgba(196, 181, 253, 0.28);
+}
+
+/* ─── Glass Cards ────────────────────────────────────────── */
 .glass-card {
   background: var(--glass);
   backdrop-filter: blur(25px);
   -webkit-backdrop-filter: blur(25px);
   border: 1px solid var(--glass-border);
   border-radius: 12px;
+  transition: box-shadow 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), border-color
+    0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .glass-card:hover {
-  box-shadow: 0 0 30px var(--gold-dim), 0 0 60px rgba(75, 0, 130, 0.2);
-  border-color: var(--gold);
-  transition: all 0.3s ease;
+  box-shadow: 0 0 40px rgba(14, 116, 144, 0.2), 0 0 80px
+    rgba(167, 139, 250, 0.08);
+  border-color: rgba(14, 116, 144, 0.6);
 }
 
-.gold-text {
-  color: var(--gold);
+/* ─── Color Utilities ────────────────────────────────────── */
+.teal-text {
+  color: var(--teal-light);
 }
-.gold-gradient {
-  background: linear-gradient(135deg, #d4af37, #f0d060, #b8960c);
+
+.teal-gradient {
+  background: linear-gradient(135deg, #06b6d4, #a78bfa);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
+/* Legacy aliases */
+.gold-text {
+  color: var(--teal-light);
+}
+.gold-gradient {
+  background: linear-gradient(135deg, #06b6d4, #a78bfa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── Buttons ────────────────────────────────────────────── */
+.btn-primary,
 .btn-gold {
-  background: linear-gradient(135deg, #d4af37, #b8960c);
-  color: #0a0a0f;
+  background: linear-gradient(135deg, #0e7490, #7c3aed);
+  color: #e8f0f8;
   font-weight: 600;
   border: none;
   padding: 12px 28px;
   border-radius: 6px;
   cursor: pointer;
-  transition: all 0.3s ease;
   font-family: "Inter", sans-serif;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.08em;
+  transition: box-shadow 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform
+    0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
+.btn-primary:hover,
 .btn-gold:hover {
-  box-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+  box-shadow: 0 0 24px rgba(14, 116, 144, 0.4), 0 0 48px
+    rgba(167, 139, 250, 0.1);
   transform: translateY(-1px);
 }
 
+.btn-outline-primary,
 .btn-outline-gold {
   background: transparent;
-  color: var(--gold);
-  border: 1px solid var(--gold);
+  color: var(--teal-light);
+  border: 1px solid rgba(14, 116, 144, 0.55);
   padding: 10px 24px;
   border-radius: 6px;
   cursor: pointer;
-  transition: all 0.3s ease;
   font-family: "Inter", sans-serif;
+  letter-spacing: 0.08em;
+  transition: background 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow
+    0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), border-color 0.5s
+    cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
+.btn-outline-primary:hover,
 .btn-outline-gold:hover {
-  background: rgba(212, 175, 55, 0.1);
-  box-shadow: 0 0 15px var(--gold-dim);
+  background: rgba(14, 116, 144, 0.1);
+  border-color: var(--teal-light);
+  box-shadow: 0 0 18px rgba(14, 116, 144, 0.18);
 }
 
+/* ─── Dividers ───────────────────────────────────────────── */
 .royal-divider {
   height: 1px;
-  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(212, 175, 55, 0.5),
+    rgba(196, 181, 253, 0.35),
+    transparent
+  );
   margin: 2rem 0;
 }
 
+/* ─── Scrollbar ──────────────────────────────────────────── */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 5px;
 }
 ::-webkit-scrollbar-track {
   background: var(--bg);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--gold);
+  background: rgba(14, 116, 144, 0.45);
   border-radius: 3px;
 }
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(14, 116, 144, 0.75);
+}
 
+/* ─── Readability: explicit overrides ───────────────────── */
+.text-gray-300 {
+  opacity: 1 !important;
+  color: #aac8d4 !important;
+}
+.text-gray-400 {
+  color: #7a9aaa;
+}
+.text-gray-500 {
+  color: #5a7a88;
+}
+
+/* ─── shadcn base tokens ─────────────────────────────────── */
 @layer base {
   :root {
     --radius: 0.625rem;

@@ -22,6 +22,7 @@ export default function OrdersPage() {
         <div className="glass-card p-10 text-center">
           <p className="text-gray-400 mb-4">Please login to view your orders</p>
           <button
+            type="button"
             onClick={() => navigate("login")}
             className="btn-gold px-8 py-3"
           >
@@ -46,6 +47,7 @@ export default function OrdersPage() {
             Your regal shopping journey awaits
           </p>
           <button
+            type="button"
             onClick={() => navigate("shop")}
             className="btn-gold px-8 py-3"
           >
