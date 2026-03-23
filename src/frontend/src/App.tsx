@@ -1,8 +1,10 @@
+import { useEffect, useState } from "react";
 import FounderGuides from "./components/FounderGuides";
 import MishiButler from "./components/MishiButler";
 import Navbar from "./components/Navbar";
 import CartPage from "./pages/CartPage";
 import HomePage from "./pages/HomePage";
+import InternalControlPage from "./pages/InternalControlPage";
 import LegacyPage from "./pages/LegacyPage";
 import LoginPage from "./pages/LoginPage";
 import OrdersPage from "./pages/OrdersPage";
@@ -40,7 +42,141 @@ function handleCaffeineLinkLeave(e: React.MouseEvent<HTMLAnchorElement>) {
   e.currentTarget.style.color = "#2e404a";
 }
 
+// PWA Install Prompt
+function PWAInstallBanner() {
+  const [deferredPrompt, setDeferredPrompt] = useState<
+    | (Event & { prompt: () => void; userChoice: Promise<{ outcome: string }> })
+    | null
+  >(null);
+  const [show, setShow] = useState(false);
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(
+        e as Event & {
+          prompt: () => void;
+          userChoice: Promise<{ outcome: string }>;
+        },
+      );
+      setShow(true);
+    };
+    window.addEventListener("beforeinstallprompt", handler);
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
+
+  if (!show || !deferredPrompt) return null;
+
+  const handleInstall = async () => {
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === "accepted") setShow(false);
+    setDeferredPrompt(null);
+  };
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        bottom: 20,
+        left: "50%",
+        transform: "translateX(-50%)",
+        zIndex: 9999,
+        background: "rgba(240,230,255,0.97)",
+        backdropFilter: "blur(20px)",
+        border: "1.5px solid rgba(212,175,55,0.5)",
+        borderRadius: 16,
+        padding: "12px 20px",
+        display: "flex",
+        alignItems: "center",
+        gap: 14,
+        boxShadow:
+          "0 8px 32px rgba(60,0,100,0.18), 0 0 20px rgba(212,175,55,0.2)",
+        maxWidth: 360,
+        width: "calc(100vw - 40px)",
+      }}
+    >
+      <img
+        src="/assets/generated/mishi-logo-golden-final.dim_800x800.png"
+        alt="MISHI"
+        style={{
+          width: 40,
+          height: 40,
+          objectFit: "contain",
+          mixBlendMode: "multiply",
+          filter: "drop-shadow(0 0 5px rgba(255,215,0,0.8))",
+        }}
+      />
+      <div style={{ flex: 1 }}>
+        <p
+          style={{
+            fontFamily: "'Cormorant Garamond', serif",
+            fontSize: "0.95rem",
+            color: "#3d1a6b",
+            fontWeight: 600,
+            margin: 0,
+          }}
+        >
+          Add MISHI to Home Screen
+        </p>
+        <p
+          style={{
+            fontFamily: "Inter, sans-serif",
+            fontSize: "0.72rem",
+            color: "#6b4f8a",
+            margin: "2px 0 0",
+          }}
+        >
+          Install for the royal experience
+        </p>
+      </div>
+      <button
+        type="button"
+        onClick={handleInstall}
+        style={{
+          background: "linear-gradient(135deg, #b8860b, #d4af37, #b8860b)",
+          border: "none",
+          borderRadius: 8,
+          padding: "7px 14px",
+          fontSize: "0.72rem",
+          fontFamily: "Inter, sans-serif",
+          fontWeight: 600,
+          color: "#fff",
+          cursor: "pointer",
+          letterSpacing: "0.06em",
+          whiteSpace: "nowrap",
+        }}
+      >
+        Install
+      </button>
+      <button
+        type="button"
+        onClick={() => setShow(false)}
+        style={{
+          background: "none",
+          border: "none",
+          cursor: "pointer",
+          color: "#9c8ab0",
+          fontSize: "1.1rem",
+          lineHeight: 1,
+          padding: "0 2px",
+        }}
+      >
+        ✕
+      </button>
+    </div>
+  );
+}
+
 export default function App() {
+  // Isolated internal control panel — no Navbar, no Butler, no footer
+  if (
+    typeof window !== "undefined" &&
+    window.location.pathname === "/mishi-internal-control"
+  ) {
+    return <InternalControlPage />;
+  }
+
   return (
     <div style={{ minHeight: "100vh", background: "#080b12" }}>
       <Navbar />
@@ -49,6 +185,7 @@ export default function App() {
       </main>
       <MishiButler />
       <FounderGuides />
+      <PWAInstallBanner />
 
       {/* Footer */}
       <footer
@@ -60,11 +197,12 @@ export default function App() {
       >
         <div className="flex flex-col items-center gap-2 mb-4">
           <img
-            src="/assets/generated/mishi-logo-golden-clean-transparent.dim_400x200.png"
+            src="/assets/generated/mishi-logo-golden-final.dim_800x800.png"
             alt="MISHI"
             className="h-12 w-auto"
             style={{
               objectFit: "contain",
+              mixBlendMode: "multiply",
               filter: "drop-shadow(0 0 10px rgba(212,175,55,0.5))",
             }}
           />

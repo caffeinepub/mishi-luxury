@@ -28,7 +28,7 @@ export default function MishiButler() {
   const [msgs, setMsgs] = useState<Message[]>([
     {
       role: "bot",
-      text: "Namaste! I am your MISHI Royal Butler 🦁 How may I serve you today? Ask me about orders, silver purity, sizing, or returns.",
+      text: "Namaste! I am your MISHI Royal Butler 🦁 May I guide you through the MISHI Empire? Ask me about orders, silver purity, sizing, or returns.",
     },
   ]);
   const [input, setInput] = useState("");
@@ -53,27 +53,56 @@ export default function MishiButler() {
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
       {open && (
         <div
-          className="glass-card w-80 flex flex-col"
           style={{
+            width: "320px",
             height: "420px",
-            boxShadow: "0 0 40px rgba(212,175,55,0.3)",
+            display: "flex",
+            flexDirection: "column",
+            background: "rgba(180, 140, 255, 0.85)",
+            backdropFilter: "blur(20px)",
+            WebkitBackdropFilter: "blur(20px)",
+            border: "2px solid rgba(255, 215, 0, 0.7)",
+            boxShadow:
+              "0 10px 30px rgba(0,0,0,0.3), 0 0 40px rgba(180,140,255,0.4)",
+            borderRadius: "16px",
+            overflow: "hidden",
           }}
+          data-ocid="butler.dialog"
         >
           {/* Header */}
           <div
-            className="flex items-center justify-between p-4"
-            style={{ borderBottom: "1px solid rgba(212,175,55,0.3)" }}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "14px 16px",
+              background: "rgba(160, 100, 240, 0.4)",
+              borderBottom: "1px solid rgba(255,215,0,0.4)",
+            }}
           >
-            <div className="flex items-center gap-2">
-              <span className="text-2xl">🦁</span>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <span style={{ fontSize: "1.5rem" }}>🦁</span>
               <div>
                 <p
-                  className="gold-text font-semibold text-sm"
-                  style={{ fontFamily: "Playfair Display, serif" }}
+                  style={{
+                    fontFamily: "Playfair Display, serif",
+                    fontWeight: 600,
+                    fontSize: "0.875rem",
+                    color: "#FFD700",
+                    margin: 0,
+                    textShadow: "0 0 8px rgba(255,215,0,0.5)",
+                  }}
                 >
                   MISHI Butler
                 </p>
-                <p className="text-xs text-gray-400">
+                {/* Subtitle — high contrast white */}
+                <p
+                  style={{
+                    fontSize: "0.7rem",
+                    color: "rgba(255,255,255,0.95)",
+                    margin: 0,
+                  }}
+                >
                   Royal Assistant · Always Available
                 </p>
               </div>
@@ -81,33 +110,59 @@ export default function MishiButler() {
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="text-gray-400 hover:text-yellow-400"
+              data-ocid="butler.close_button"
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                color: "rgba(255,255,255,0.7)",
+                display: "flex",
+                alignItems: "center",
+                padding: "4px",
+                borderRadius: "4px",
+                transition: "color 0.2s",
+              }}
             >
               <X size={16} />
             </button>
           </div>
+
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-2">
+          <div
+            style={{
+              flex: 1,
+              overflowY: "auto",
+              padding: "12px",
+              display: "flex",
+              flexDirection: "column",
+              gap: "8px",
+            }}
+          >
             {msgs.map((m, i) => (
               <div
                 // biome-ignore lint/suspicious/noArrayIndexKey: pre-existing pattern
                 key={i}
-                className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
+                style={{
+                  display: "flex",
+                  justifyContent: m.role === "user" ? "flex-end" : "flex-start",
+                }}
               >
                 <div
-                  className={`px-3 py-2 rounded-xl text-sm max-w-[85%] ${
-                    m.role === "user" ? "text-black" : "text-amber-100"
-                  }`}
                   style={{
+                    padding: "8px 12px",
+                    borderRadius: "12px",
+                    fontSize: "0.8125rem",
+                    maxWidth: "85%",
+                    lineHeight: 1.5,
+                    color: m.role === "user" ? "#fff" : "#1a0535",
                     background:
                       m.role === "user"
                         ? "linear-gradient(135deg, #D4AF37, #B8960C)"
-                        : "rgba(75,0,130,0.4)",
+                        : "rgba(255, 255, 255, 0.92)",
                     border:
                       m.role === "bot"
-                        ? "1px solid rgba(212,175,55,0.3)"
+                        ? "1px solid rgba(100,60,180,0.3)"
                         : "none",
-                    lineHeight: 1.5,
                   }}
                 >
                   {m.text}
@@ -116,37 +171,70 @@ export default function MishiButler() {
             ))}
             <div ref={endRef} />
           </div>
+
           {/* Input */}
           <div
-            className="p-3 flex gap-2"
-            style={{ borderTop: "1px solid rgba(212,175,55,0.3)" }}
+            style={{
+              padding: "10px 12px",
+              display: "flex",
+              gap: "8px",
+              background: "rgba(80,40,160,0.3)",
+              borderTop: "1px solid rgba(255,215,0,0.3)",
+            }}
           >
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && send()}
               placeholder="Ask your Butler..."
-              className="flex-1 bg-transparent text-amber-100 text-sm outline-none placeholder-gray-500"
+              data-ocid="butler.input"
+              style={{
+                flex: 1,
+                background: "transparent",
+                border: "none",
+                outline: "none",
+                color: "rgba(255,255,255,0.9)",
+                fontSize: "0.8125rem",
+              }}
             />
             <button
               type="button"
               onClick={send}
-              className="btn-gold p-2 rounded-lg"
+              data-ocid="butler.submit_button"
+              style={{
+                background: "linear-gradient(135deg, #D4AF37, #B8960C)",
+                border: "none",
+                cursor: "pointer",
+                padding: "6px 8px",
+                borderRadius: "8px",
+                color: "#fff",
+                display: "flex",
+                alignItems: "center",
+              }}
             >
               <Send size={14} />
             </button>
           </div>
         </div>
       )}
+
       {/* Toggle */}
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="w-14 h-14 rounded-full flex items-center justify-center text-2xl"
+        data-ocid="butler.open_modal_button"
         style={{
+          width: "56px",
+          height: "56px",
+          borderRadius: "50%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: "1.5rem",
           background: "linear-gradient(135deg, #D4AF37, #B8960C)",
           boxShadow: "0 0 25px rgba(212,175,55,0.6)",
           border: "2px solid rgba(240,208,96,0.8)",
+          cursor: "pointer",
         }}
         title="MISHI Royal Butler"
       >

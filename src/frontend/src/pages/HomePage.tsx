@@ -12,28 +12,24 @@ export default function HomePage() {
   useEffect(() => {
     const hero = heroRef.current;
     if (!hero) return;
-
     const applyTransform = () => {
       const scrollY = window.scrollY;
       const { x: xBg, y: yBg } = mouseOffsetRef.current;
-      const scrollOffset = scrollY * 0.25;
+      const scrollOffset = scrollY * 0.2;
       if (bgImgRef.current) {
         bgImgRef.current.style.transform = `translate(calc(-50% + ${xBg}px), calc(-50% + ${yBg - scrollOffset}px))`;
       }
     };
-
     const handleMouseMove = (e: MouseEvent) => {
       const rect = hero.getBoundingClientRect();
       const cx = rect.width / 2;
       const cy = rect.height / 2;
       const dx = (e.clientX - rect.left - cx) / cx;
       const dy = (e.clientY - rect.top - cy) / cy;
-      mouseOffsetRef.current = { x: dx * -18, y: dy * -12 };
+      mouseOffsetRef.current = { x: dx * -14, y: dy * -10 };
       applyTransform();
     };
-
     const handleScroll = () => applyTransform();
-
     hero.addEventListener("mousemove", handleMouseMove);
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => {
@@ -57,15 +53,21 @@ export default function HomePage() {
     },
     {
       id: "legacy",
-      label: "The MISHI Legacy",
+      label: "MISHI Legacy",
       sub: "Our story, our roots, our vision",
-      img: "/assets/generated/hero-lion-lioness-sunrise.dim_1920x900.jpg",
+      img: "/assets/generated/mishi-hero-lion-lioness-cliff-guardians.dim_1920x900.jpg",
       isLegacy: true,
     },
   ];
 
   return (
-    <div style={{ background: "#0a0d16", minHeight: "100vh" }}>
+    <div
+      style={{
+        background:
+          "linear-gradient(180deg, #f0e8ff 0%, #e0f4f8 50%, #d0f0f5 100%)",
+        minHeight: "100vh",
+      }}
+    >
       {/* ═══════════ HERO ═══════════ */}
       <section
         ref={heroRef}
@@ -80,11 +82,11 @@ export default function HomePage() {
           justifyContent: "center",
         }}
       >
-        {/* Parallax background */}
+        {/* Parallax background — Lion & Lioness Guardians on cliff under golden sunrise */}
         <img
           ref={bgImgRef}
-          src="/assets/generated/mishi-hero-royal-pair.dim_1920x900.jpg"
-          alt="Lion and Lioness - MISHI Royal Pair"
+          src="/assets/generated/mishi-hero-lion-lioness-cliff-guardians.dim_1920x900.jpg"
+          alt="Lion and Lioness Guardians on cliff under golden sunrise — MISHI"
           style={{
             position: "absolute",
             left: "50%",
@@ -93,29 +95,31 @@ export default function HomePage() {
             width: "115%",
             height: "115%",
             objectFit: "cover",
-            objectPosition: "center 35%",
-            filter: "brightness(0.72) saturate(1.3)",
+            objectPosition: "center 40%",
+            filter: "brightness(1.05) saturate(1.2)",
             transition: "transform 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
             willChange: "transform",
           }}
         />
-        {/* Purple-gold atmospheric gradient */}
+
+        {/* Lavender-to-teal gradient overlay — 30% opacity max */}
         <div
           style={{
             position: "absolute",
             inset: 0,
             background:
-              "linear-gradient(to bottom, rgba(8,5,18,0.15) 0%, rgba(60,30,100,0.1) 40%, rgba(8,5,18,0.88) 100%)",
+              "linear-gradient(to bottom, rgba(180,140,220,0.12) 0%, rgba(100,190,210,0.08) 55%, rgba(60,190,190,0.15) 100%)",
             pointerEvents: "none",
           }}
         />
-        {/* Edge vignette */}
+
+        {/* Very soft vignette — reduced to 30% for text readability only */}
         <div
           style={{
             position: "absolute",
             inset: 0,
             background:
-              "radial-gradient(ellipse 88% 82% at 50% 48%, transparent 48%, rgba(6,3,14,0.8) 100%)",
+              "radial-gradient(ellipse 70% 60% at 50% 30%, rgba(60,20,100,0.10) 0%, transparent 70%)",
             pointerEvents: "none",
           }}
         />
@@ -129,100 +133,51 @@ export default function HomePage() {
             padding: "0 1.5rem",
           }}
         >
-          {/* Logo watermark */}
+          {/* MISHI logo — transparent PNG, golden wreath floats directly on hero background */}
           <img
-            src="/assets/generated/mishi-logo-golden-clean-transparent.dim_400x200.png"
-            alt="MISHI Logo"
+            src="/assets/generated/mishi-logo-pure-transparent.dim_800x800.png"
+            alt="MISHI SM Wreath Logo"
             style={{
-              height: 72,
-              width: "auto",
+              height: 90,
+              width: 90,
               objectFit: "contain",
-              filter: "drop-shadow(0 0 16px rgba(212,175,55,0.5))",
-              marginBottom: "0.75rem",
+              display: "block",
+              margin: "0 auto 0.75rem",
+              background: "transparent",
+              border: "none",
+              boxShadow: "none",
+              filter:
+                "drop-shadow(0 0 12px rgba(255,215,0,0.95)) drop-shadow(0 2px 8px rgba(60,0,100,0.8))",
             }}
           />
           <h1
+            className="mishi-brand-title"
             style={{
-              fontFamily: "'Great Vibes', cursive",
-              fontSize: "clamp(5rem, 15vw, 11rem)",
-              lineHeight: 1.0,
-              background:
-                "linear-gradient(135deg, #c9a84c 0%, #f5d98b 25%, #d4af37 45%, #fceab0 60%, #b8860b 80%, #e8c84a 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-              filter: "drop-shadow(0 0 20px rgba(212,175,55,0.45))",
-              margin: "0 0 0.5rem",
+              fontSize: "clamp(2rem, 5vw, 3.5rem)",
+              lineHeight: 1,
+              marginBottom: "0.5rem",
+              letterSpacing: "0.05em",
+              fontFamily: '"Great Vibes", "Dancing Script", cursive',
+              color: "#FFD700",
+              filter:
+                "drop-shadow(0 0 20px rgba(255,215,0,0.9)) drop-shadow(0 4px 16px rgba(60,0,100,0.7))",
             }}
           >
-            Mishi
+            MISHI
           </h1>
           <p
+            className="tagline-elegant"
             style={{
-              fontFamily: "Inter, sans-serif",
-              fontWeight: 300,
-              fontSize: "clamp(0.8rem, 2vw, 1.05rem)",
-              letterSpacing: "0.32em",
-              textTransform: "uppercase",
-              color: "#c4b5fd",
-              marginBottom: "2rem",
+              fontSize: "clamp(0.85rem, 2vw, 1.1rem)",
+              letterSpacing: "0.25em",
+              marginTop: "0.5rem",
+              color: "rgba(255,255,255,0.92)",
+              fontFamily: "Georgia, serif",
+              textShadow: "0 2px 12px rgba(0,0,0,0.5)",
             }}
           >
             Where Love Unites Empires
           </p>
-          <div
-            style={{
-              width: 160,
-              height: 1,
-              background:
-                "linear-gradient(90deg, transparent, #d4af37, transparent)",
-              margin: "0 auto 1.5rem",
-            }}
-          />
-          <p
-            style={{
-              color: "rgba(192,232,239,0.75)",
-              fontSize: "0.82rem",
-              letterSpacing: "0.06em",
-              fontFamily: "Inter, sans-serif",
-            }}
-          >
-            Sterling Silver Ornaments &amp; Royal Ethnic Wear
-          </p>
-        </div>
-
-        {/* Scroll cue */}
-        <div
-          style={{
-            position: "absolute",
-            bottom: 28,
-            left: "50%",
-            transform: "translateX(-50%)",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: 6,
-            opacity: 0.45,
-          }}
-        >
-          <span
-            style={{
-              fontSize: "0.6rem",
-              letterSpacing: "0.35em",
-              color: "#d4af37",
-              textTransform: "uppercase",
-              fontFamily: "Inter, sans-serif",
-            }}
-          >
-            Scroll
-          </span>
-          <div
-            style={{
-              width: 1,
-              height: 40,
-              background: "linear-gradient(to bottom, #d4af37, transparent)",
-            }}
-          />
         </div>
       </section>
 
@@ -230,42 +185,57 @@ export default function HomePage() {
       <section
         data-section="jewelry"
         style={{
-          padding: "4rem 1.5rem 5rem",
+          padding: "5rem 1.5rem 5rem",
           maxWidth: 1200,
           margin: "0 auto",
+          background: "linear-gradient(180deg, #f5eeff 0%, #e8f8fb 100%)",
         }}
       >
         <p
           style={{
             textAlign: "center",
-            fontSize: "0.68rem",
-            letterSpacing: "0.42em",
-            color: "#d4af37",
+            fontSize: "0.65rem",
+            letterSpacing: "0.45em",
+            color: "#2ab8c8",
             textTransform: "uppercase",
-            marginBottom: "0.6rem",
+            marginBottom: "0.5rem",
             fontFamily: "Inter, sans-serif",
+            fontWeight: 500,
           }}
         >
           Our Collections
         </p>
         <h2
           style={{
-            fontFamily: "Playfair Display, serif",
+            fontFamily: "'Cormorant Garamond', serif",
             fontSize: "clamp(1.8rem, 4vw, 3rem)",
-            color: "#c0e8ef",
+            color: "#3d1a6b",
             textAlign: "center",
-            marginBottom: "3rem",
+            marginBottom: "0.6rem",
             fontWeight: 400,
+            fontStyle: "italic",
           }}
         >
           The Royal Treasury
         </h2>
+        <p
+          style={{
+            textAlign: "center",
+            fontSize: "0.88rem",
+            color: "#8b6f4e",
+            fontFamily: "'Cormorant Garamond', serif",
+            marginBottom: "3rem",
+            fontStyle: "italic",
+          }}
+        >
+          Handcrafted with love, designed for royalty
+        </p>
 
         <div
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-            gap: "1.5rem",
+            gap: "1.75rem",
           }}
         >
           {categories.map((cat) => (
@@ -279,63 +249,61 @@ export default function HomePage() {
               style={{
                 position: "relative",
                 overflow: "hidden",
-                borderRadius: 20,
-                aspectRatio: "4/5",
-                border: "1px solid rgba(212,175,55,0.22)",
+                borderRadius: 24,
+                border: "1.5px solid rgba(80,200,200,0.35)",
                 cursor: "pointer",
-                background: "#111520",
+                background: "#ffffff",
                 textAlign: "left",
                 padding: 0,
-                transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                boxShadow:
+                  "0 4px 20px rgba(80,200,200,0.12), 0 1px 4px rgba(0,0,0,0.04), inset 0 0 0 1px rgba(255,255,255,0.95), inset 0 2px 25px rgba(255,255,255,0.6)",
+                transition: "transform 0.35s ease, box-shadow 0.35s ease",
               }}
               onMouseEnter={(e) => {
                 (e.currentTarget as HTMLButtonElement).style.transform =
-                  "translateY(-6px) scale(1.01)";
+                  "translateY(-8px)";
                 (e.currentTarget as HTMLButtonElement).style.boxShadow =
-                  "0 16px 48px rgba(212,175,55,0.2), 0 0 0 1px rgba(212,175,55,0.3)";
+                  "0 20px 50px rgba(80,200,200,0.22), 0 0 20px rgba(100,220,220,0.3), 0 4px 12px rgba(0,0,0,0.06), inset 0 0 0 1px rgba(255,255,255,0.95), inset 0 2px 25px rgba(255,255,255,0.6)";
               }}
               onMouseLeave={(e) => {
                 (e.currentTarget as HTMLButtonElement).style.transform =
-                  "translateY(0) scale(1)";
-                (e.currentTarget as HTMLButtonElement).style.boxShadow = "none";
+                  "translateY(0)";
+                (e.currentTarget as HTMLButtonElement).style.boxShadow =
+                  "0 4px 20px rgba(80,200,200,0.12), 0 1px 4px rgba(0,0,0,0.04), inset 0 0 0 1px rgba(255,255,255,0.95), inset 0 2px 25px rgba(255,255,255,0.6)";
               }}
             >
-              <img
-                src={cat.img}
-                alt={cat.label}
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                  opacity: 0.55,
-                  transition: "opacity 0.4s ease, transform 0.6s ease",
-                }}
-              />
               <div
                 style={{
-                  position: "absolute",
-                  inset: 0,
-                  background:
-                    "linear-gradient(to top, rgba(8,5,18,0.96) 0%, rgba(8,5,18,0.3) 55%, transparent 100%)",
+                  overflow: "hidden",
+                  borderRadius: "24px 24px 0 0",
+                  aspectRatio: "4/3",
                 }}
-              />
+              >
+                <img
+                  src={cat.img}
+                  alt={cat.label}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    transition: "transform 0.5s ease",
+                  }}
+                />
+              </div>
               <div
                 style={{
-                  position: "absolute",
-                  bottom: 0,
-                  left: 0,
-                  padding: "1.8rem 1.5rem",
+                  padding: "1.4rem 1.6rem 1.6rem",
+                  background: "#ffffff",
+                  borderTop: "1px solid rgba(80,200,200,0.12)",
                 }}
               >
                 <h3
                   style={{
-                    fontFamily: "Playfair Display, serif",
-                    fontSize: "1.45rem",
-                    color: "#c0e8ef",
-                    fontWeight: 500,
-                    marginBottom: "0.4rem",
+                    fontFamily: "'Cormorant Garamond', serif",
+                    fontSize: "1.35rem",
+                    color: "#1a3a4a",
+                    fontWeight: 600,
+                    marginBottom: "0.3rem",
                     letterSpacing: "0.02em",
                   }}
                 >
@@ -344,26 +312,28 @@ export default function HomePage() {
                 <p
                   style={{
                     fontSize: "0.8rem",
-                    color: "#7a9aaa",
+                    color: "#8b6f4e",
                     fontFamily: "Inter, sans-serif",
                     marginBottom: "1rem",
+                    fontStyle: "italic",
                   }}
                 >
                   {cat.sub}
                 </p>
                 <span
                   style={{
-                    fontSize: "0.7rem",
-                    letterSpacing: "0.25em",
-                    color: "#d4af37",
+                    fontSize: "0.68rem",
+                    letterSpacing: "0.22em",
+                    color: "#2ab8c8",
                     textTransform: "uppercase",
                     fontFamily: "Inter, sans-serif",
+                    fontWeight: 500,
                     display: "flex",
                     alignItems: "center",
                     gap: 6,
                   }}
                 >
-                  Explore <span>→</span>
+                  Explore <span style={{ fontSize: "0.9rem" }}>→</span>
                 </span>
               </div>
             </button>
@@ -377,16 +347,16 @@ export default function HomePage() {
           padding: "0.9rem 1.5rem",
           textAlign: "center",
           background:
-            "linear-gradient(90deg, rgba(10,4,24,0), rgba(212,175,55,0.07), rgba(10,4,24,0))",
-          borderTop: "1px solid rgba(212,175,55,0.15)",
-          borderBottom: "1px solid rgba(212,175,55,0.15)",
+            "linear-gradient(90deg, rgba(240,232,255,0), rgba(80,200,200,0.08), rgba(240,232,255,0))",
+          borderTop: "1px solid rgba(80,200,200,0.15)",
+          borderBottom: "1px solid rgba(80,200,200,0.15)",
         }}
       >
         <p
           style={{
             fontSize: "0.82rem",
             fontFamily: "Inter, sans-serif",
-            color: "#7a8a90",
+            color: "#8b6f4e",
           }}
         >
           <span
@@ -398,7 +368,7 @@ export default function HomePage() {
           >
             Live Silver Rate{" "}
           </span>
-          <span style={{ color: "#d4af37", fontWeight: 600 }}>
+          <span style={{ color: "#2ab8c8", fontWeight: 600 }}>
             ₹{silverRate}/gram
           </span>
           <span style={{ fontSize: "0.68rem", marginLeft: 10 }}>
@@ -416,24 +386,26 @@ export default function HomePage() {
           <p
             style={{
               textAlign: "center",
-              fontSize: "0.68rem",
-              letterSpacing: "0.42em",
-              color: "#d4af37",
+              fontSize: "0.65rem",
+              letterSpacing: "0.45em",
+              color: "#2ab8c8",
               textTransform: "uppercase",
-              marginBottom: "0.6rem",
+              marginBottom: "0.5rem",
               fontFamily: "Inter, sans-serif",
+              fontWeight: 500,
             }}
           >
             Handpicked
           </p>
           <h2
             style={{
-              fontFamily: "Playfair Display, serif",
+              fontFamily: "'Cormorant Garamond', serif",
               fontSize: "clamp(1.8rem, 4vw, 2.8rem)",
-              color: "#c0e8ef",
+              color: "#1a3a4a",
               textAlign: "center",
               marginBottom: "3rem",
               fontWeight: 400,
+              fontStyle: "italic",
             }}
           >
             Royal Selections
@@ -454,22 +426,28 @@ export default function HomePage() {
                   data-ocid={`products.item.${idx + 1}`}
                   onClick={() => navigate(`product-${p.id}`)}
                   style={{
-                    borderRadius: 16,
+                    borderRadius: 20,
                     overflow: "hidden",
-                    border: "1px solid rgba(14,116,144,0.2)",
-                    background: "#0f1420",
+                    border: "1px solid rgba(80,200,200,0.2)",
+                    background: "#ffffff",
                     cursor: "pointer",
                     textAlign: "left",
                     padding: 0,
-                    transition: "transform 0.3s ease",
+                    boxShadow:
+                      "0 2px 12px rgba(80,200,200,0.08), inset 0 0 0 1px rgba(255,255,255,0.9), inset 0 2px 20px rgba(255,255,255,0.5)",
+                    transition: "transform 0.3s ease, box-shadow 0.3s ease",
                   }}
                   onMouseEnter={(e) => {
                     (e.currentTarget as HTMLButtonElement).style.transform =
                       "translateY(-4px)";
+                    (e.currentTarget as HTMLButtonElement).style.boxShadow =
+                      "0 12px 32px rgba(80,200,200,0.18), 0 0 12px rgba(80,200,200,0.2), inset 0 0 0 1px rgba(255,255,255,0.9), inset 0 2px 20px rgba(255,255,255,0.5)";
                   }}
                   onMouseLeave={(e) => {
                     (e.currentTarget as HTMLButtonElement).style.transform =
                       "translateY(0)";
+                    (e.currentTarget as HTMLButtonElement).style.boxShadow =
+                      "0 2px 12px rgba(80,200,200,0.08), inset 0 0 0 1px rgba(255,255,255,0.9), inset 0 2px 20px rgba(255,255,255,0.5)";
                   }}
                 >
                   <div style={{ aspectRatio: "4/5", overflow: "hidden" }}>
@@ -484,14 +462,20 @@ export default function HomePage() {
                       }}
                     />
                   </div>
-                  <div style={{ padding: "1rem 1.1rem 1.2rem" }}>
+                  <div
+                    style={{
+                      padding: "1rem 1.1rem 1.2rem",
+                      background: "#ffffff",
+                    }}
+                  >
                     <span
                       style={{
                         fontSize: "0.64rem",
                         letterSpacing: "0.2em",
-                        color: "#d4af37",
+                        color: "#2ab8c8",
                         textTransform: "uppercase",
                         fontFamily: "Inter, sans-serif",
+                        fontWeight: 500,
                       }}
                     >
                       {p.category === "silver"
@@ -500,22 +484,23 @@ export default function HomePage() {
                     </span>
                     <h3
                       style={{
-                        fontFamily: "Playfair Display, serif",
+                        fontFamily: "'Cormorant Garamond', serif",
                         fontSize: "1rem",
-                        color: "#d0eaf3",
+                        color: "#1a3a4a",
                         marginTop: "0.3rem",
                         marginBottom: "0.5rem",
-                        fontWeight: 500,
+                        fontWeight: 600,
                       }}
                     >
                       {p.name}
                     </h3>
                     <p
                       style={{
-                        color: "#d4af37",
-                        fontWeight: 600,
+                        color: "#3d0070",
+                        fontWeight: 800,
                         marginBottom: "0.75rem",
-                        fontSize: "0.95rem",
+                        fontSize: "1rem",
+                        letterSpacing: "0.02em",
                       }}
                     >
                       ₹{price.toLocaleString("en-IN")}
@@ -533,12 +518,13 @@ export default function HomePage() {
                         fontSize: "0.7rem",
                         letterSpacing: "0.2em",
                         textTransform: "uppercase",
-                        color: "#d4af37",
+                        color: "#2ab8c8",
                         background: "transparent",
-                        border: "1px solid rgba(212,175,55,0.4)",
+                        border: "1.5px solid rgba(42,184,200,0.4)",
                         borderRadius: 8,
                         cursor: "pointer",
                         fontFamily: "Inter, sans-serif",
+                        fontWeight: 500,
                         transition: "all 0.25s ease",
                       }}
                     >
@@ -559,14 +545,15 @@ export default function HomePage() {
                 fontSize: "0.78rem",
                 letterSpacing: "0.28em",
                 textTransform: "uppercase",
-                color: "#0a0d16",
+                color: "#ffffff",
                 background:
-                  "linear-gradient(135deg, #c9a84c, #f5d98b, #d4af37)",
+                  "linear-gradient(135deg, #2ab8c8, #4dc9c9, #2ab8c8)",
                 border: "none",
                 borderRadius: 8,
                 cursor: "pointer",
                 fontFamily: "Inter, sans-serif",
                 fontWeight: 600,
+                boxShadow: "0 4px 20px rgba(42,184,200,0.35)",
               }}
             >
               View Full Collection

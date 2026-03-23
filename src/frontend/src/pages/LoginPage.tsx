@@ -38,11 +38,12 @@ export default function LoginPage() {
       <div className="glass-card p-10 w-full max-w-md">
         <div className="text-center mb-8">
           <img
-            src="/assets/generated/mishi-logo-golden-clean-transparent.dim_400x200.png"
+            src="/assets/generated/mishi-logo-golden-final.dim_800x800.png"
             alt="MISHI"
             className="h-16 w-auto mx-auto mb-4"
             style={{
               objectFit: "contain",
+              mixBlendMode: "multiply",
               filter: "drop-shadow(0 0 10px rgba(212,175,55,0.5))",
             }}
           />

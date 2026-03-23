@@ -1,0 +1,1908 @@
+import { useState } from "react";
+import { type Category, STAGE_LABELS, useMishi } from "../store/store";
+
+// ─── Types ───────────────────────────────────────────────────────────────────
+type Role = "superAdmin" | "manager" | "viewer";
+type TabId = "add" | "prices" | "orders" | "team" | "settings";
+
+type Session = {
+  gmail: string;
+  role: Role;
+  name: string;
+  sessionVersion: number;
+};
+
+type TeamMember = {
+  gmail: string;
+  name: string;
+  role: "manager" | "viewer";
+  addedAt: string;
+  isRevoked: boolean;
+};
+
+const SUPER_ADMIN_GMAIL = "mishiofficial1701@gmail.com";
+
+// ─── Styles ──────────────────────────────────────────────────────────────────
+const s = {
+  root: {
+    minHeight: "100vh",
+    background: "#0f1117",
+    color: "#e2e8f0",
+    fontFamily: "Inter, system-ui, sans-serif",
+    fontSize: "14px",
+  } as React.CSSProperties,
+  loginWrap: {
+    minHeight: "100vh",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  } as React.CSSProperties,
+  loginBox: {
+    background: "#1a1d23",
+    border: "1px solid #2d3748",
+    borderRadius: "8px",
+    padding: "40px",
+    width: "380px",
+    maxWidth: "calc(100vw - 32px)",
+  } as React.CSSProperties,
+  title: {
+    fontSize: "20px",
+    fontWeight: 700,
+    color: "#e2e8f0",
+    marginBottom: "4px",
+    letterSpacing: "0.02em",
+  } as React.CSSProperties,
+  subtitle: {
+    fontSize: "12px",
+    color: "#718096",
+    marginBottom: "28px",
+    textTransform: "uppercase" as const,
+    letterSpacing: "0.1em",
+  },
+  label: {
+    display: "block",
+    fontSize: "11px",
+    color: "#718096",
+    textTransform: "uppercase" as const,
+    letterSpacing: "0.08em",
+    marginBottom: "6px",
+  },
+  input: {
+    width: "100%",
+    background: "#2d3748",
+    border: "1px solid #4a5568",
+    borderRadius: "6px",
+    padding: "10px 12px",
+    color: "#e2e8f0",
+    fontSize: "14px",
+    outline: "none",
+    boxSizing: "border-box" as const,
+  },
+  inputFocus: { border: "1px solid #3b82f6" },
+  btn: {
+    background: "#3b82f6",
+    color: "#fff",
+    border: "none",
+    borderRadius: "6px",
+    padding: "10px 20px",
+    fontSize: "14px",
+    fontWeight: 600,
+    cursor: "pointer",
+    letterSpacing: "0.02em",
+  } as React.CSSProperties,
+  btnSm: {
+    background: "#3b82f6",
+    color: "#fff",
+    border: "none",
+    borderRadius: "4px",
+    padding: "5px 12px",
+    fontSize: "12px",
+    fontWeight: 600,
+    cursor: "pointer",
+    whiteSpace: "nowrap" as const,
+  },
+  btnGhost: {
+    background: "transparent",
+    color: "#718096",
+    border: "1px solid #2d3748",
+    borderRadius: "6px",
+    padding: "9px 18px",
+    fontSize: "13px",
+    cursor: "pointer",
+  } as React.CSSProperties,
+  btnDanger: {
+    background: "#c53030",
+    color: "#fff",
+    border: "none",
+    borderRadius: "6px",
+    padding: "10px 20px",
+    fontSize: "14px",
+    fontWeight: 600,
+    cursor: "pointer",
+    letterSpacing: "0.02em",
+  } as React.CSSProperties,
+  btnDangerSm: {
+    background: "#c53030",
+    color: "#fff",
+    border: "none",
+    borderRadius: "4px",
+    padding: "5px 12px",
+    fontSize: "12px",
+    fontWeight: 600,
+    cursor: "pointer",
+    whiteSpace: "nowrap" as const,
+  },
+  btnRestoreSm: {
+    background: "#4a5568",
+    color: "#e2e8f0",
+    border: "none",
+    borderRadius: "4px",
+    padding: "5px 12px",
+    fontSize: "12px",
+    fontWeight: 600,
+    cursor: "pointer",
+    whiteSpace: "nowrap" as const,
+  },
+  error: {
+    color: "#fc8181",
+    fontSize: "12px",
+    marginTop: "8px",
+    background: "rgba(252,129,129,0.08)",
+    border: "1px solid rgba(252,129,129,0.2)",
+    borderRadius: "4px",
+    padding: "8px 12px",
+  } as React.CSSProperties,
+  success: {
+    color: "#68d391",
+    fontSize: "12px",
+    marginTop: "8px",
+    background: "rgba(104,211,145,0.08)",
+    border: "1px solid rgba(104,211,145,0.2)",
+    borderRadius: "4px",
+    padding: "8px 12px",
+  } as React.CSSProperties,
+  header: {
+    background: "#1a1d23",
+    borderBottom: "1px solid #2d3748",
+    padding: "0 24px",
+    height: "52px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    position: "sticky" as const,
+    top: 0,
+    zIndex: 100,
+  },
+  headerTitle: {
+    fontSize: "15px",
+    fontWeight: 700,
+    color: "#e2e8f0",
+    letterSpacing: "0.03em",
+  },
+  table: {
+    width: "100%",
+    borderCollapse: "collapse" as const,
+    fontSize: "13px",
+  },
+  th: {
+    background: "#1a1d23",
+    color: "#718096",
+    textAlign: "left" as const,
+    padding: "10px 14px",
+    fontSize: "11px",
+    textTransform: "uppercase" as const,
+    letterSpacing: "0.08em",
+    borderBottom: "1px solid #2d3748",
+    whiteSpace: "nowrap" as const,
+  },
+  td: {
+    padding: "10px 14px",
+    borderBottom: "1px solid #232730",
+    color: "#e2e8f0",
+    verticalAlign: "middle" as const,
+  },
+  tdAlt: {
+    padding: "10px 14px",
+    borderBottom: "1px solid #232730",
+    color: "#e2e8f0",
+    background: "#181b22",
+    verticalAlign: "middle" as const,
+  },
+  badge: (status: string): React.CSSProperties => {
+    const colors: Record<string, [string, string]> = {
+      orderPlaced: ["#90cdf4", "rgba(144,205,244,0.12)"],
+      artisanCrafting: ["#f6ad55", "rgba(246,173,85,0.12)"],
+      qualityCheck: ["#b794f4", "rgba(183,148,244,0.12)"],
+      royalDispatch: ["#68d391", "rgba(104,211,145,0.12)"],
+      palaceDelivery: ["#68d391", "rgba(104,211,145,0.12)"],
+    };
+    const [color, bg] = colors[status] || ["#e2e8f0", "transparent"];
+    return {
+      display: "inline-block",
+      padding: "2px 8px",
+      borderRadius: "9999px",
+      fontSize: "11px",
+      fontWeight: 600,
+      color,
+      background: bg,
+      border: `1px solid ${color}33`,
+      whiteSpace: "nowrap",
+    };
+  },
+};
+
+// ─── Helper Components ────────────────────────────────────────────────────────
+function DarkInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
+  const [focused, setFocused] = useState(false);
+  return (
+    <input
+      {...props}
+      style={{
+        ...s.input,
+        ...(focused ? s.inputFocus : {}),
+        ...(props.style || {}),
+      }}
+      onFocus={() => setFocused(true)}
+      onBlur={() => setFocused(false)}
+    />
+  );
+}
+
+function DarkTextarea(
+  props: React.TextareaHTMLAttributes<HTMLTextAreaElement>,
+) {
+  const [focused, setFocused] = useState(false);
+  return (
+    <textarea
+      {...props}
+      style={{
+        ...s.input,
+        resize: "vertical",
+        minHeight: "80px",
+        ...(focused ? s.inputFocus : {}),
+        ...(props.style || {}),
+      }}
+      onFocus={() => setFocused(true)}
+      onBlur={() => setFocused(false)}
+    />
+  );
+}
+
+function DarkSelect(props: React.SelectHTMLAttributes<HTMLSelectElement>) {
+  const [focused, setFocused] = useState(false);
+  return (
+    <select
+      {...props}
+      style={{
+        ...s.input,
+        cursor: "pointer",
+        ...(focused ? s.inputFocus : {}),
+        ...(props.style || {}),
+      }}
+      onFocus={() => setFocused(true)}
+      onBlur={() => setFocused(false)}
+    />
+  );
+}
+
+function RoleBadge({ role }: { role: Role }) {
+  const configs: Record<Role, { label: string; color: string; bg: string }> = {
+    superAdmin: {
+      label: "Super Admin",
+      color: "#d4af37",
+      bg: "rgba(212,175,55,0.12)",
+    },
+    manager: {
+      label: "Manager",
+      color: "#f6ad55",
+      bg: "rgba(246,173,85,0.12)",
+    },
+    viewer: { label: "Viewer", color: "#718096", bg: "rgba(113,128,150,0.12)" },
+  };
+  const c = configs[role];
+  return (
+    <span
+      style={{
+        display: "inline-block",
+        padding: "2px 8px",
+        borderRadius: "9999px",
+        fontSize: "11px",
+        fontWeight: 600,
+        color: c.color,
+        background: c.bg,
+        border: `1px solid ${c.color}55`,
+        whiteSpace: "nowrap",
+      }}
+    >
+      {c.label}
+    </span>
+  );
+}
+
+// ─── Tab: Add New Jewelry ─────────────────────────────────────────────────────
+function AddJewelryTab({ onLog }: { onLog: (entry: string) => void }) {
+  const { addProduct } = useMishi();
+  const [form, setForm] = useState({
+    name: "",
+    category: "silver" as Category,
+    price: "",
+    stock: "",
+    imageUrl: "",
+    description: "",
+  });
+  const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
+
+  const patch = (k: string, v: string) =>
+    setForm((prev) => ({ ...prev, [k]: v }));
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.name || !form.price || !form.stock) {
+      setStatus("error");
+      return;
+    }
+    addProduct({
+      name: form.name,
+      description: form.description,
+      category: form.category,
+      price: Number(form.price),
+      basePrice: Number(form.price),
+      silverWeight: form.category === "silver" ? 10 : undefined,
+      sizes: [],
+      imageUrl: form.imageUrl || "https://picsum.photos/seed/new/400/500",
+      stock: Number(form.stock),
+      isActive: true,
+    });
+    onLog(`Product added: ${form.name}`);
+    setStatus("success");
+    setForm({
+      name: "",
+      category: "silver",
+      price: "",
+      stock: "",
+      imageUrl: "",
+      description: "",
+    });
+    setTimeout(() => setStatus("idle"), 3000);
+  };
+
+  return (
+    <form
+      onSubmit={handleSubmit}
+      style={{ maxWidth: 520 }}
+      data-ocid="add_jewelry.panel"
+    >
+      <h2
+        style={{
+          fontSize: "16px",
+          fontWeight: 700,
+          marginBottom: "20px",
+          color: "#e2e8f0",
+        }}
+      >
+        Add New Jewelry / Product
+      </h2>
+
+      <div style={{ marginBottom: "14px" }}>
+        <label htmlFor="aj-name" style={s.label}>
+          Product Name
+        </label>
+        <DarkInput
+          id="aj-name"
+          data-ocid="add_jewelry.name.input"
+          type="text"
+          value={form.name}
+          onChange={(e) => patch("name", e.target.value)}
+          placeholder="e.g. Royal Chandbali Earrings"
+          required
+        />
+      </div>
+
+      <div style={{ marginBottom: "14px" }}>
+        <label htmlFor="aj-category" style={s.label}>
+          Category
+        </label>
+        <DarkSelect
+          id="aj-category"
+          data-ocid="add_jewelry.category.select"
+          value={form.category}
+          onChange={(e) => patch("category", e.target.value)}
+        >
+          <option value="silver">Sterling Silver</option>
+          <option value="ethnic">Royal Ethnic Wear</option>
+        </DarkSelect>
+      </div>
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: "14px",
+          marginBottom: "14px",
+        }}
+      >
+        <div>
+          <label htmlFor="aj-price" style={s.label}>
+            Base Price (₹)
+          </label>
+          <DarkInput
+            id="aj-price"
+            data-ocid="add_jewelry.price.input"
+            type="number"
+            value={form.price}
+            onChange={(e) => patch("price", e.target.value)}
+            placeholder="e.g. 6000"
+            min="0"
+            required
+          />
+        </div>
+        <div>
+          <label htmlFor="aj-stock" style={s.label}>
+            Stock Quantity
+          </label>
+          <DarkInput
+            id="aj-stock"
+            data-ocid="add_jewelry.stock.input"
+            type="number"
+            value={form.stock}
+            onChange={(e) => patch("stock", e.target.value)}
+            placeholder="e.g. 20"
+            min="0"
+            required
+          />
+        </div>
+      </div>
+
+      <div style={{ marginBottom: "14px" }}>
+        <label htmlFor="aj-image" style={s.label}>
+          Image URL
+        </label>
+        <DarkInput
+          id="aj-image"
+          data-ocid="add_jewelry.image_url.input"
+          type="text"
+          value={form.imageUrl}
+          onChange={(e) => patch("imageUrl", e.target.value)}
+          placeholder="https://..."
+        />
+      </div>
+
+      <div style={{ marginBottom: "20px" }}>
+        <label htmlFor="aj-desc" style={s.label}>
+          Description
+        </label>
+        <DarkTextarea
+          id="aj-desc"
+          data-ocid="add_jewelry.description.textarea"
+          value={form.description}
+          onChange={(e) => patch("description", e.target.value)}
+          placeholder="Product description..."
+          rows={3}
+        />
+      </div>
+
+      {status === "error" && (
+        <div style={s.error} data-ocid="add_jewelry.error_state">
+          ✗ Please fill in all required fields.
+        </div>
+      )}
+      {status === "success" && (
+        <div style={s.success} data-ocid="add_jewelry.success_state">
+          ✓ Product added successfully.
+        </div>
+      )}
+
+      <button
+        type="submit"
+        style={{ ...s.btn, marginTop: "12px" }}
+        data-ocid="add_jewelry.submit_button"
+      >
+        Add Product
+      </button>
+    </form>
+  );
+}
+
+// ─── Tab: Change Prices ───────────────────────────────────────────────────────
+function ChangePricesTab({ onLog }: { onLog: (entry: string) => void }) {
+  const { products, updateProduct } = useMishi();
+  const [newPrices, setNewPrices] = useState<Record<number, string>>({});
+  const [rowStatus, setRowStatus] = useState<
+    Record<number, "success" | "error">
+  >({});
+
+  const handleUpdate = (id: number) => {
+    const val = Number(newPrices[id]);
+    if (!val || val <= 0) {
+      setRowStatus((prev) => ({ ...prev, [id]: "error" }));
+      return;
+    }
+    updateProduct(id, { price: val, basePrice: val });
+    onLog(`Price updated: Product #${id}`);
+    setRowStatus((prev) => ({ ...prev, [id]: "success" }));
+    setNewPrices((prev) => ({ ...prev, [id]: "" }));
+    setTimeout(
+      () =>
+        setRowStatus((prev) => {
+          const next = { ...prev };
+          delete next[id];
+          return next;
+        }),
+      2500,
+    );
+  };
+
+  return (
+    <div data-ocid="change_prices.panel">
+      <h2
+        style={{
+          fontSize: "16px",
+          fontWeight: 700,
+          marginBottom: "20px",
+          color: "#e2e8f0",
+        }}
+      >
+        Change Prices
+      </h2>
+      <div style={{ overflowX: "auto" }}>
+        <table style={s.table} data-ocid="change_prices.table">
+          <thead>
+            <tr>
+              <th style={s.th}>Product Name</th>
+              <th style={s.th}>Category</th>
+              <th style={s.th}>Current Price (₹)</th>
+              <th style={s.th}>New Price (₹)</th>
+              <th style={s.th}>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {products.map((p, i) => (
+              <tr key={p.id} data-ocid={`change_prices.row.${i + 1}`}>
+                <td style={i % 2 === 0 ? s.td : s.tdAlt}>{p.name}</td>
+                <td style={i % 2 === 0 ? s.td : s.tdAlt}>
+                  <span
+                    style={{
+                      color: p.category === "silver" ? "#90cdf4" : "#f6ad55",
+                    }}
+                  >
+                    {p.category === "silver"
+                      ? "Sterling Silver"
+                      : "Ethnic Wear"}
+                  </span>
+                </td>
+                <td style={i % 2 === 0 ? s.td : s.tdAlt}>
+                  <strong>₹{p.price.toLocaleString("en-IN")}</strong>
+                </td>
+                <td style={i % 2 === 0 ? s.td : s.tdAlt}>
+                  <input
+                    aria-label={`New price for ${p.name}`}
+                    data-ocid="change_prices.new_price.input"
+                    type="number"
+                    min="0"
+                    value={newPrices[p.id] ?? ""}
+                    onChange={(e) =>
+                      setNewPrices((prev) => ({
+                        ...prev,
+                        [p.id]: e.target.value,
+                      }))
+                    }
+                    placeholder="Enter new price"
+                    style={{ ...s.input, width: "140px", padding: "6px 10px" }}
+                  />
+                  {rowStatus[p.id] === "success" && (
+                    <span
+                      style={{
+                        color: "#68d391",
+                        fontSize: "11px",
+                        marginLeft: "8px",
+                      }}
+                      data-ocid="change_prices.success_state"
+                    >
+                      ✓ Updated
+                    </span>
+                  )}
+                  {rowStatus[p.id] === "error" && (
+                    <span
+                      style={{
+                        color: "#fc8181",
+                        fontSize: "11px",
+                        marginLeft: "8px",
+                      }}
+                      data-ocid="change_prices.error_state"
+                    >
+                      ✗ Invalid
+                    </span>
+                  )}
+                </td>
+                <td style={i % 2 === 0 ? s.td : s.tdAlt}>
+                  <button
+                    type="button"
+                    style={s.btnSm}
+                    data-ocid={`change_prices.save_button.${i + 1}`}
+                    onClick={() => handleUpdate(p.id)}
+                  >
+                    Update
+                  </button>
+                </td>
+              </tr>
+            ))}
+            {products.length === 0 && (
+              <tr>
+                <td
+                  colSpan={5}
+                  style={{ ...s.td, textAlign: "center", color: "#4a5568" }}
+                  data-ocid="change_prices.empty_state"
+                >
+                  No products found.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+// ─── Tab: Orders & Financials ────────────────────────────────────────────────
+function ViewOrdersTab() {
+  const { orders, products, approveOrder } = useMishi();
+
+  const getItemsSummary = (items: { productId: number; quantity: number }[]) =>
+    items
+      .map((ci) => {
+        const p = products.find((pr) => pr.id === ci.productId);
+        return p
+          ? `${p.name} ×${ci.quantity}`
+          : `#${ci.productId} ×${ci.quantity}`;
+      })
+      .join(", ");
+
+  return (
+    <div data-ocid="view_orders.panel">
+      <h2
+        style={{
+          fontSize: "16px",
+          fontWeight: 700,
+          marginBottom: "20px",
+          color: "#e2e8f0",
+        }}
+      >
+        Orders & Financials
+      </h2>
+      <div style={{ overflowX: "auto" }}>
+        <table style={s.table} data-ocid="view_orders.table">
+          <thead>
+            <tr>
+              <th style={s.th}>Order ID</th>
+              <th style={s.th}>Items</th>
+              <th style={s.th}>Total (₹)</th>
+              <th style={s.th}>Status</th>
+              <th style={s.th}>Approved</th>
+              <th style={s.th}>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {[...orders].reverse().map((o, i) => (
+              <tr key={o.id} data-ocid={`view_orders.row.${i + 1}`}>
+                <td style={i % 2 === 0 ? s.td : s.tdAlt}>
+                  <span style={{ fontFamily: "monospace", color: "#90cdf4" }}>
+                    #{o.id}
+                  </span>
+                </td>
+                <td
+                  style={{
+                    ...(i % 2 === 0 ? s.td : s.tdAlt),
+                    maxWidth: "220px",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {getItemsSummary(o.items)}
+                </td>
+                <td style={i % 2 === 0 ? s.td : s.tdAlt}>
+                  <strong>₹{o.totalAmount.toLocaleString("en-IN")}</strong>
+                </td>
+                <td style={i % 2 === 0 ? s.td : s.tdAlt}>
+                  <span style={s.badge(o.stage)}>{STAGE_LABELS[o.stage]}</span>
+                </td>
+                <td style={i % 2 === 0 ? s.td : s.tdAlt}>
+                  {o.isApproved ? (
+                    <span style={{ color: "#68d391", fontSize: "12px" }}>
+                      ✓ Yes
+                    </span>
+                  ) : (
+                    <span style={{ color: "#718096", fontSize: "12px" }}>
+                      Pending
+                    </span>
+                  )}
+                </td>
+                <td style={i % 2 === 0 ? s.td : s.tdAlt}>
+                  {!o.isApproved ? (
+                    <button
+                      type="button"
+                      style={s.btnSm}
+                      data-ocid={`view_orders.confirm_button.${i + 1}`}
+                      onClick={() => approveOrder(o.id)}
+                    >
+                      Approve
+                    </button>
+                  ) : (
+                    <span style={{ fontSize: "12px", color: "#4a5568" }}>
+                      —
+                    </span>
+                  )}
+                </td>
+              </tr>
+            ))}
+            {orders.length === 0 && (
+              <tr>
+                <td
+                  colSpan={6}
+                  style={{ ...s.td, textAlign: "center", color: "#4a5568" }}
+                  data-ocid="view_orders.empty_state"
+                >
+                  No orders placed yet.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+// ─── Tab: Team ────────────────────────────────────────────────────────────────
+function TeamTab({
+  teamMembers,
+  setTeamMembers,
+  onLog,
+  currentSession,
+  onRevokeCurrentUser,
+}: {
+  teamMembers: TeamMember[];
+  setTeamMembers: React.Dispatch<React.SetStateAction<TeamMember[]>>;
+  onLog: (entry: string) => void;
+  currentSession: Session | null;
+  onRevokeCurrentUser: (gmail: string) => void;
+}) {
+  const [form, setForm] = useState({
+    name: "",
+    gmail: "",
+    role: "manager" as "manager" | "viewer",
+  });
+  const [formError, setFormError] = useState("");
+  const [formSuccess, setFormSuccess] = useState("");
+
+  const addMember = (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormError("");
+    setFormSuccess("");
+    if (!form.name.trim()) {
+      setFormError("Name is required.");
+      return;
+    }
+    if (!form.gmail.includes("@")) {
+      setFormError("Enter a valid Gmail address.");
+      return;
+    }
+    if (form.gmail.toLowerCase() === SUPER_ADMIN_GMAIL) {
+      setFormError("Cannot add Super Admin as team member.");
+      return;
+    }
+    if (
+      teamMembers.some(
+        (m) => m.gmail.toLowerCase() === form.gmail.toLowerCase(),
+      )
+    ) {
+      setFormError("This Gmail is already in the team.");
+      return;
+    }
+    const member: TeamMember = {
+      gmail: form.gmail.toLowerCase(),
+      name: form.name.trim(),
+      role: form.role,
+      addedAt: new Date().toLocaleDateString("en-IN"),
+      isRevoked: false,
+    };
+    setTeamMembers((prev) => [...prev, member]);
+    onLog(
+      `Team member added: ${member.name} (${member.gmail}) as ${member.role}`,
+    );
+    setFormSuccess(`${member.name} added successfully.`);
+    setForm({ name: "", gmail: "", role: "manager" });
+    setTimeout(() => setFormSuccess(""), 3000);
+  };
+
+  const revokeAccess = (gmail: string) => {
+    setTeamMembers((prev) =>
+      prev.map((m) => (m.gmail === gmail ? { ...m, isRevoked: true } : m)),
+    );
+    const member = teamMembers.find((m) => m.gmail === gmail);
+    if (member) onLog(`Access revoked: ${member.name} (${member.gmail})`);
+    // force logout if this is the current session
+    if (currentSession?.gmail === gmail) onRevokeCurrentUser(gmail);
+  };
+
+  const restoreAccess = (gmail: string) => {
+    setTeamMembers((prev) =>
+      prev.map((m) => (m.gmail === gmail ? { ...m, isRevoked: false } : m)),
+    );
+    const member = teamMembers.find((m) => m.gmail === gmail);
+    if (member) onLog(`Access restored: ${member.name} (${member.gmail})`);
+  };
+
+  const deleteMember = (gmail: string) => {
+    const member = teamMembers.find((m) => m.gmail === gmail);
+    setTeamMembers((prev) => prev.filter((m) => m.gmail !== gmail));
+    if (member) onLog(`Team member removed: ${member.name} (${member.gmail})`);
+  };
+
+  return (
+    <div data-ocid="team.panel">
+      <h2
+        style={{
+          fontSize: "16px",
+          fontWeight: 700,
+          marginBottom: "4px",
+          color: "#e2e8f0",
+        }}
+      >
+        Team Management
+      </h2>
+      <p style={{ fontSize: "12px", color: "#718096", marginBottom: "24px" }}>
+        Only Super Admin can add or remove team members.
+      </p>
+
+      {/* Add Member Form */}
+      <div
+        style={{
+          background: "#1a1d23",
+          border: "1px solid #2d3748",
+          borderRadius: "8px",
+          padding: "20px",
+          marginBottom: "28px",
+        }}
+      >
+        <h3
+          style={{
+            fontSize: "13px",
+            fontWeight: 600,
+            color: "#e2e8f0",
+            marginBottom: "16px",
+            textTransform: "uppercase",
+            letterSpacing: "0.06em",
+          }}
+        >
+          Add Team Member
+        </h3>
+        <form onSubmit={addMember}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr 160px auto",
+              gap: "12px",
+              alignItems: "flex-end",
+            }}
+          >
+            <div>
+              <label htmlFor="team-name" style={s.label}>
+                Name
+              </label>
+              <DarkInput
+                id="team-name"
+                data-ocid="team.name.input"
+                type="text"
+                value={form.name}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, name: e.target.value }))
+                }
+                placeholder="Full name"
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="team-gmail" style={s.label}>
+                Gmail
+              </label>
+              <DarkInput
+                id="team-gmail"
+                data-ocid="team.gmail.input"
+                type="email"
+                value={form.gmail}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, gmail: e.target.value }))
+                }
+                placeholder="example@gmail.com"
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="team-role" style={s.label}>
+                Role
+              </label>
+              <DarkSelect
+                id="team-role"
+                data-ocid="team.role.select"
+                value={form.role}
+                onChange={(e) =>
+                  setForm((f) => ({
+                    ...f,
+                    role: e.target.value as "manager" | "viewer",
+                  }))
+                }
+              >
+                <option value="manager">Manager</option>
+                <option value="viewer">Viewer</option>
+              </DarkSelect>
+            </div>
+            <div>
+              <button
+                type="submit"
+                style={{ ...s.btn, padding: "10px 16px", whiteSpace: "nowrap" }}
+                data-ocid="team.add_member.button"
+              >
+                Add Member
+              </button>
+            </div>
+          </div>
+          {formError && (
+            <div
+              style={{ ...s.error, marginTop: "10px" }}
+              data-ocid="team.form.error_state"
+            >
+              ✗ {formError}
+            </div>
+          )}
+          {formSuccess && (
+            <div
+              style={{ ...s.success, marginTop: "10px" }}
+              data-ocid="team.form.success_state"
+            >
+              ✓ {formSuccess}
+            </div>
+          )}
+        </form>
+      </div>
+
+      {/* Team Members Table */}
+      <div style={{ overflowX: "auto", marginBottom: "32px" }}>
+        <table style={s.table} data-ocid="team.table">
+          <thead>
+            <tr>
+              <th style={s.th}>Name</th>
+              <th style={s.th}>Gmail</th>
+              <th style={s.th}>Role</th>
+              <th style={s.th}>Added</th>
+              <th style={s.th}>Status</th>
+              <th style={s.th}>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {teamMembers.length === 0 && (
+              <tr>
+                <td
+                  colSpan={6}
+                  style={{
+                    ...s.td,
+                    textAlign: "center",
+                    color: "#4a5568",
+                    padding: "24px",
+                  }}
+                  data-ocid="team.empty_state"
+                >
+                  No team members added yet.
+                </td>
+              </tr>
+            )}
+            {teamMembers.map((m, i) => (
+              <tr key={m.gmail} data-ocid={`team.row.${i + 1}`}>
+                <td style={i % 2 === 0 ? s.td : s.tdAlt}>{m.name}</td>
+                <td style={i % 2 === 0 ? s.td : s.tdAlt}>
+                  <span
+                    style={{
+                      fontFamily: "monospace",
+                      fontSize: "12px",
+                      color: "#90cdf4",
+                    }}
+                  >
+                    {m.gmail}
+                  </span>
+                </td>
+                <td style={i % 2 === 0 ? s.td : s.tdAlt}>
+                  <span
+                    style={{
+                      display: "inline-block",
+                      padding: "2px 8px",
+                      borderRadius: "9999px",
+                      fontSize: "11px",
+                      fontWeight: 600,
+                      color: m.role === "manager" ? "#f6ad55" : "#718096",
+                      background:
+                        m.role === "manager"
+                          ? "rgba(246,173,85,0.12)"
+                          : "rgba(113,128,150,0.12)",
+                      border: `1px solid ${m.role === "manager" ? "#f6ad5555" : "#71809655"}`,
+                    }}
+                  >
+                    {m.role === "manager" ? "Manager" : "Viewer"}
+                  </span>
+                </td>
+                <td
+                  style={{
+                    ...(i % 2 === 0 ? s.td : s.tdAlt),
+                    color: "#718096",
+                  }}
+                >
+                  {m.addedAt}
+                </td>
+                <td style={i % 2 === 0 ? s.td : s.tdAlt}>
+                  <span
+                    style={{
+                      display: "inline-block",
+                      padding: "2px 8px",
+                      borderRadius: "9999px",
+                      fontSize: "11px",
+                      fontWeight: 600,
+                      color: m.isRevoked ? "#fc8181" : "#68d391",
+                      background: m.isRevoked
+                        ? "rgba(252,129,129,0.12)"
+                        : "rgba(104,211,145,0.12)",
+                      border: `1px solid ${m.isRevoked ? "#fc818155" : "#68d39155"}`,
+                    }}
+                  >
+                    {m.isRevoked ? "Revoked" : "Active"}
+                  </span>
+                </td>
+                <td style={i % 2 === 0 ? s.td : s.tdAlt}>
+                  <div style={{ display: "flex", gap: "6px" }}>
+                    {m.isRevoked ? (
+                      <button
+                        type="button"
+                        style={s.btnRestoreSm}
+                        data-ocid={`team.restore_button.${i + 1}`}
+                        onClick={() => restoreAccess(m.gmail)}
+                      >
+                        Restore Access
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        style={s.btnDangerSm}
+                        data-ocid={`team.revoke_button.${i + 1}`}
+                        onClick={() => revokeAccess(m.gmail)}
+                      >
+                        Revoke Access
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      style={{
+                        ...s.btnDangerSm,
+                        background: "#2d3748",
+                        color: "#fc8181",
+                      }}
+                      data-ocid={`team.delete_button.${i + 1}`}
+                      onClick={() => deleteMember(m.gmail)}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+// ─── Tab: Settings ────────────────────────────────────────────────────────────
+function SettingsTab({
+  emergencyPin,
+  setEmergencyPin,
+  onForceLogoutAll,
+  masterPassword,
+  onMasterPasswordChange,
+}: {
+  emergencyPin: string;
+  setEmergencyPin: (pin: string) => void;
+  onForceLogoutAll: () => void;
+  masterPassword: string;
+  onMasterPasswordChange: (pw: string) => void;
+}) {
+  const [pinInput, setPinInput] = useState(emergencyPin);
+  const [pinStatus, setPinStatus] = useState<"idle" | "success" | "error">(
+    "idle",
+  );
+  const [pinError, setPinError] = useState("");
+  const [confirmForceLogout, setConfirmForceLogout] = useState(false);
+  const [pwForm, setPwForm] = useState({ current: "", newPw: "", confirm: "" });
+  const [pwStatus, setPwStatus] = useState<"idle" | "success" | "error">(
+    "idle",
+  );
+  const [pwError, setPwError] = useState("");
+
+  const handleChangePw = (e: React.FormEvent) => {
+    e.preventDefault();
+    setPwError("");
+    if (pwForm.current !== masterPassword) {
+      setPwError("Current password is incorrect.");
+      setPwStatus("error");
+      return;
+    }
+    if (pwForm.newPw.length < 6) {
+      setPwError("New password must be at least 6 characters.");
+      setPwStatus("error");
+      return;
+    }
+    if (pwForm.newPw !== pwForm.confirm) {
+      setPwError("New passwords do not match.");
+      setPwStatus("error");
+      return;
+    }
+    onMasterPasswordChange(pwForm.newPw);
+    setPwStatus("success");
+    setPwForm({ current: "", newPw: "", confirm: "" });
+    setTimeout(() => setPwStatus("idle"), 4000);
+  };
+
+  const savePin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!/^\d{6}$/.test(pinInput)) {
+      setPinError("PIN must be exactly 6 digits.");
+      setPinStatus("error");
+      return;
+    }
+    setEmergencyPin(pinInput);
+    setPinStatus("success");
+    setPinError("");
+    setTimeout(() => setPinStatus("idle"), 3000);
+  };
+
+  return (
+    <div data-ocid="settings.panel" style={{ maxWidth: 600 }}>
+      <h2
+        style={{
+          fontSize: "16px",
+          fontWeight: 700,
+          marginBottom: "24px",
+          color: "#e2e8f0",
+        }}
+      >
+        System Settings
+      </h2>
+
+      {/* Super Admin Identity */}
+      <div
+        style={{
+          background: "#1a1d23",
+          border: "1px solid #2d3748",
+          borderRadius: "8px",
+          padding: "20px",
+          marginBottom: "20px",
+        }}
+      >
+        <h3
+          style={{
+            fontSize: "13px",
+            fontWeight: 600,
+            color: "#718096",
+            textTransform: "uppercase",
+            letterSpacing: "0.06em",
+            marginBottom: "12px",
+          }}
+        >
+          🔒 Super Admin Identity
+        </h3>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <span
+            style={{
+              fontSize: "11px",
+              color: "#718096",
+              textTransform: "uppercase",
+              letterSpacing: "0.08em",
+            }}
+          >
+            Gmail:
+          </span>
+          <code
+            style={{
+              background: "#2d3748",
+              padding: "4px 10px",
+              borderRadius: "4px",
+              fontSize: "13px",
+              color: "#d4af37",
+              fontFamily: "monospace",
+            }}
+          >
+            {SUPER_ADMIN_GMAIL}
+          </code>
+          <span style={{ fontSize: "11px", color: "#718096" }}>
+            (read-only)
+          </span>
+        </div>
+        <p style={{ fontSize: "11px", color: "#4a5568", marginTop: "8px" }}>
+          This is the permanent Super Admin account. It cannot be changed or
+          removed.
+        </p>
+      </div>
+
+      {/* Emergency Reset PIN */}
+      <div
+        style={{
+          background: "#1a1d23",
+          border: "1px solid #2d3748",
+          borderRadius: "8px",
+          padding: "20px",
+          marginBottom: "20px",
+        }}
+      >
+        <h3
+          style={{
+            fontSize: "13px",
+            fontWeight: 600,
+            color: "#718096",
+            textTransform: "uppercase",
+            letterSpacing: "0.06em",
+            marginBottom: "4px",
+          }}
+        >
+          Emergency Reset Code
+        </h3>
+        <p style={{ fontSize: "12px", color: "#4a5568", marginBottom: "16px" }}>
+          Set a backup 6-digit PIN for emergency access situations.
+        </p>
+        <form
+          onSubmit={savePin}
+          style={{ display: "flex", gap: "12px", alignItems: "flex-end" }}
+        >
+          <div style={{ flex: 1 }}>
+            <label htmlFor="settings-pin" style={s.label}>
+              6-Digit PIN
+            </label>
+            <DarkInput
+              id="settings-pin"
+              data-ocid="settings.emergency_pin.input"
+              type="text"
+              inputMode="numeric"
+              maxLength={6}
+              value={pinInput}
+              onChange={(e) =>
+                setPinInput(e.target.value.replace(/\D/g, "").slice(0, 6))
+              }
+              placeholder="e.g. 123456"
+            />
+          </div>
+          <button
+            type="submit"
+            style={{ ...s.btn, padding: "10px 16px" }}
+            data-ocid="settings.save_pin.button"
+          >
+            Save PIN
+          </button>
+        </form>
+        {pinStatus === "error" && (
+          <div style={s.error} data-ocid="settings.pin.error_state">
+            ✗ {pinError}
+          </div>
+        )}
+        {pinStatus === "success" && (
+          <div style={s.success} data-ocid="settings.pin.success_state">
+            ✓ Emergency PIN updated.
+          </div>
+        )}
+      </div>
+
+      {/* Change Master Password */}
+      <div
+        style={{
+          background: "#1a1d23",
+          border: "1px solid #2d3748",
+          borderRadius: "8px",
+          padding: "20px",
+          marginBottom: "20px",
+        }}
+      >
+        <h3
+          style={{
+            fontSize: "13px",
+            fontWeight: 600,
+            color: "#718096",
+            textTransform: "uppercase",
+            letterSpacing: "0.06em",
+            marginBottom: "4px",
+          }}
+        >
+          🔑 Change Master Password
+        </h3>
+        <p style={{ fontSize: "12px", color: "#4a5568", marginBottom: "16px" }}>
+          Update the Super Admin login password. Takes effect immediately.
+        </p>
+        <form onSubmit={handleChangePw} style={{ maxWidth: 400 }}>
+          <div style={{ marginBottom: "12px" }}>
+            <label htmlFor="settings-pw-current" style={s.label}>
+              Current Password
+            </label>
+            <DarkInput
+              id="settings-pw-current"
+              data-ocid="settings.pw_current.input"
+              type="password"
+              value={pwForm.current}
+              onChange={(e) =>
+                setPwForm((f) => ({ ...f, current: e.target.value }))
+              }
+              placeholder="Current master password"
+              autoComplete="current-password"
+              required
+            />
+          </div>
+          <div style={{ marginBottom: "12px" }}>
+            <label htmlFor="settings-pw-new" style={s.label}>
+              New Password
+            </label>
+            <DarkInput
+              id="settings-pw-new"
+              data-ocid="settings.pw_new.input"
+              type="password"
+              value={pwForm.newPw}
+              onChange={(e) =>
+                setPwForm((f) => ({ ...f, newPw: e.target.value }))
+              }
+              placeholder="Min. 6 characters"
+              autoComplete="new-password"
+              required
+            />
+          </div>
+          <div style={{ marginBottom: "16px" }}>
+            <label htmlFor="settings-pw-confirm" style={s.label}>
+              Confirm New Password
+            </label>
+            <DarkInput
+              id="settings-pw-confirm"
+              data-ocid="settings.pw_confirm.input"
+              type="password"
+              value={pwForm.confirm}
+              onChange={(e) =>
+                setPwForm((f) => ({ ...f, confirm: e.target.value }))
+              }
+              placeholder="Re-enter new password"
+              autoComplete="new-password"
+              required
+            />
+          </div>
+          {pwStatus === "error" && (
+            <div style={s.error} data-ocid="settings.pw.error_state">
+              ✗ {pwError}
+            </div>
+          )}
+          {pwStatus === "success" && (
+            <div style={s.success} data-ocid="settings.pw.success_state">
+              ✓ Master password updated successfully.
+            </div>
+          )}
+          <button
+            type="submit"
+            style={{ ...s.btn, marginTop: "12px" }}
+            data-ocid="settings.pw_change.submit_button"
+          >
+            Update Password
+          </button>
+        </form>
+      </div>
+
+      {/* Danger Zone */}
+      <div
+        style={{
+          background: "rgba(197,48,48,0.06)",
+          border: "1px solid #c53030",
+          borderRadius: "8px",
+          padding: "20px",
+        }}
+      >
+        <h3
+          style={{
+            fontSize: "13px",
+            fontWeight: 600,
+            color: "#fc8181",
+            textTransform: "uppercase",
+            letterSpacing: "0.06em",
+            marginBottom: "4px",
+          }}
+        >
+          ⚠ Danger Zone
+        </h3>
+        <p style={{ fontSize: "12px", color: "#718096", marginBottom: "16px" }}>
+          Force logout all team members immediately. This revokes all active
+          sessions.
+        </p>
+        {!confirmForceLogout ? (
+          <button
+            type="button"
+            style={s.btnDanger}
+            data-ocid="settings.force_logout.button"
+            onClick={() => setConfirmForceLogout(true)}
+          >
+            Force Logout All Team Members
+          </button>
+        ) : (
+          <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+            <span style={{ fontSize: "13px", color: "#fc8181" }}>
+              Are you sure? This cannot be undone.
+            </span>
+            <button
+              type="button"
+              style={s.btnDanger}
+              data-ocid="settings.force_logout.confirm_button"
+              onClick={() => {
+                onForceLogoutAll();
+                setConfirmForceLogout(false);
+              }}
+            >
+              Yes, Force Logout
+            </button>
+            <button
+              type="button"
+              style={s.btnGhost}
+              data-ocid="settings.force_logout.cancel_button"
+              onClick={() => setConfirmForceLogout(false)}
+            >
+              Cancel
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Activity Log Bar ────────────────────────────────────────────────────────
+function ActivityLogBar({ log }: { log: string[] }) {
+  const [expanded, setExpanded] = useState(false);
+  const recent = log.slice(0, expanded ? 20 : 5);
+
+  if (log.length === 0) return null;
+
+  return (
+    <div
+      style={{
+        background: "#12151c",
+        borderBottom: "1px solid #2d3748",
+        padding: "0 24px",
+      }}
+      data-ocid="activity_log.panel"
+    >
+      <button
+        type="button"
+        onClick={() => setExpanded((v) => !v)}
+        style={{
+          background: "transparent",
+          border: "none",
+          color: "#718096",
+          fontSize: "11px",
+          letterSpacing: "0.08em",
+          textTransform: "uppercase",
+          cursor: "pointer",
+          padding: "8px 0",
+          fontFamily: "inherit",
+          display: "flex",
+          alignItems: "center",
+          gap: "6px",
+        }}
+        data-ocid="activity_log.toggle"
+      >
+        <span>📋 Activity Log ({log.length})</span>
+        <span>{expanded ? "▲" : "▼"}</span>
+      </button>
+      {expanded && (
+        <div style={{ paddingBottom: "10px" }}>
+          {recent.map((entry, i) => (
+            <div
+              key={`log-${i}-${entry.slice(0, 20)}`}
+              style={{
+                fontSize: "11px",
+                color: "#4a5568",
+                padding: "2px 0",
+                borderTop: i === 0 ? "1px solid #2d3748" : "none",
+                paddingTop: "4px",
+              }}
+            >
+              <span style={{ color: "#718096", marginRight: "8px" }}>
+                {i + 1}.
+              </span>
+              {entry}
+            </div>
+          ))}
+          {log.length > 5 && !expanded && (
+            <div style={{ fontSize: "11px", color: "#4a5568" }}>
+              +{log.length - 5} more…
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Main Page ────────────────────────────────────────────────────────────────
+export default function InternalControlPage() {
+  const [session, setSession] = useState<Session | null>(null);
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [activityLog, setActivityLog] = useState<string[]>([]);
+  const [sessionVersion, setSessionVersion] = useState(0);
+  const [emergencyPin, setEmergencyPin] = useState("000000");
+  const [masterPassword, setMasterPassword] = useState("MISHIOWNER2025");
+
+  // Login state
+  const [loginStep, setLoginStep] = useState<1 | 2>(1);
+  const [gmailInput, setGmailInput] = useState("");
+  const [pendingGmail, setPendingGmail] = useState("");
+  const [passwordInput, setPasswordInput] = useState("");
+  const [loginError, setLoginError] = useState("");
+  const [gmailFocused, setGmailFocused] = useState(false);
+  const [pwFocused, setPwFocused] = useState(false);
+
+  const [tab, setTab] = useState<TabId>("add");
+
+  const addLog = (entry: string) => {
+    setActivityLog((prev) => [entry, ...prev].slice(0, 20));
+  };
+
+  const handleGmailSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const gmail = gmailInput.trim().toLowerCase();
+    setLoginError("");
+
+    if (gmail === SUPER_ADMIN_GMAIL) {
+      // Super Admin needs password step
+      setPendingGmail(gmail);
+      setPasswordInput("");
+      setLoginStep(2);
+      return;
+    }
+
+    const member = teamMembers.find((m) => m.gmail === gmail);
+    if (member) {
+      if (member.isRevoked) {
+        setLoginError("Your access has been revoked by the Super Admin.");
+        return;
+      }
+      setSession({
+        gmail,
+        role: member.role,
+        name: member.name,
+        sessionVersion,
+      });
+      return;
+    }
+
+    setLoginError("Access denied. This Gmail is not authorized.");
+  };
+
+  const handlePasswordSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginError("");
+    if (passwordInput === masterPassword) {
+      setSession({
+        gmail: pendingGmail,
+        role: "superAdmin",
+        name: "Super Admin",
+        sessionVersion,
+      });
+      setLoginStep(1);
+      setGmailInput("");
+      setPasswordInput("");
+    } else {
+      setLoginError("Incorrect master password.");
+    }
+  };
+
+  const handleBackToGmail = () => {
+    setLoginStep(1);
+    setLoginError("");
+    setPasswordInput("");
+  };
+
+  const handleLogout = () => {
+    setSession(null);
+    setGmailInput("");
+    setPasswordInput("");
+    setLoginStep(1);
+    setLoginError("");
+  };
+
+  const handleForceLogoutAll = () => {
+    addLog("Force logout triggered by Super Admin");
+    setSessionVersion((v) => v + 1);
+    // If current session is a team member (not superAdmin), log them out
+    if (session && session.role !== "superAdmin") {
+      setSession(null);
+    }
+  };
+
+  // Auto-logout if session version no longer matches (force logout)
+  if (
+    session &&
+    session.role !== "superAdmin" &&
+    session.sessionVersion !== sessionVersion
+  ) {
+    setSession(null);
+  }
+
+  // Login screen
+  if (!session) {
+    return (
+      <div style={s.root}>
+        <div style={s.loginWrap}>
+          <div style={s.loginBox}>
+            <div style={{ textAlign: "center", marginBottom: "24px" }}>
+              <div style={{ fontSize: "32px", marginBottom: "8px" }}>🛡️</div>
+              <div style={s.title}>MISHI Internal Control</div>
+              <div style={s.subtitle}>Super Admin &amp; Team Access</div>
+            </div>
+
+            {loginStep === 1 ? (
+              <form onSubmit={handleGmailSubmit}>
+                <div style={{ marginBottom: "20px" }}>
+                  <label htmlFor="gmail-input" style={s.label}>
+                    Gmail Address
+                  </label>
+                  <input
+                    id="gmail-input"
+                    data-ocid="login.input"
+                    type="email"
+                    value={gmailInput}
+                    onChange={(e) => setGmailInput(e.target.value)}
+                    autoComplete="email"
+                    style={{
+                      ...s.input,
+                      ...(gmailFocused ? s.inputFocus : {}),
+                    }}
+                    onFocus={() => setGmailFocused(true)}
+                    onBlur={() => setGmailFocused(false)}
+                    placeholder="Enter your Gmail address"
+                    required
+                  />
+                </div>
+                {loginError && (
+                  <div style={s.error} data-ocid="login.error_state">
+                    {loginError}
+                  </div>
+                )}
+                <button
+                  type="submit"
+                  style={{
+                    ...s.btn,
+                    width: "100%",
+                    marginTop: loginError ? "12px" : "0",
+                  }}
+                  data-ocid="login.submit_button"
+                >
+                  Continue
+                </button>
+              </form>
+            ) : (
+              <form onSubmit={handlePasswordSubmit}>
+                <div style={{ marginBottom: "6px" }}>
+                  <div
+                    style={{
+                      fontSize: "11px",
+                      color: "#718096",
+                      marginBottom: "16px",
+                      background: "#2d3748",
+                      padding: "8px 12px",
+                      borderRadius: "4px",
+                      fontFamily: "monospace",
+                    }}
+                  >
+                    {pendingGmail}
+                  </div>
+                  <label htmlFor="master-pw-input" style={s.label}>
+                    Master Password
+                  </label>
+                  <input
+                    id="master-pw-input"
+                    data-ocid="login.password.input"
+                    type="password"
+                    value={passwordInput}
+                    onChange={(e) => setPasswordInput(e.target.value)}
+                    autoComplete="current-password"
+                    style={{ ...s.input, ...(pwFocused ? s.inputFocus : {}) }}
+                    onFocus={() => setPwFocused(true)}
+                    onBlur={() => setPwFocused(false)}
+                    placeholder="Enter master password"
+                    required
+                  />
+                </div>
+                {loginError && (
+                  <div style={s.error} data-ocid="login.password.error_state">
+                    {loginError}
+                  </div>
+                )}
+                <button
+                  type="submit"
+                  style={{ ...s.btn, width: "100%", marginTop: "16px" }}
+                  data-ocid="login.password.submit_button"
+                >
+                  Access Dashboard
+                </button>
+                <button
+                  type="button"
+                  onClick={handleBackToGmail}
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    color: "#718096",
+                    fontSize: "12px",
+                    cursor: "pointer",
+                    marginTop: "12px",
+                    padding: "0",
+                    fontFamily: "inherit",
+                    display: "block",
+                    width: "100%",
+                    textAlign: "center",
+                  }}
+                  data-ocid="login.back.button"
+                >
+                  ← Back
+                </button>
+              </form>
+            )}
+
+            <p
+              style={{
+                fontSize: "11px",
+                color: "#4a5568",
+                textAlign: "center",
+                marginTop: "20px",
+              }}
+            >
+              Only authorized Gmail accounts can access this portal.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Tab definitions with role gating
+  const allTabs: { id: TabId; label: string; roles: Role[] }[] = [
+    { id: "add", label: "Add New Jewelry", roles: ["superAdmin", "manager"] },
+    { id: "prices", label: "Change Prices", roles: ["superAdmin", "manager"] },
+    { id: "orders", label: "Orders & Financials", roles: ["superAdmin"] },
+    { id: "team", label: "Team", roles: ["superAdmin"] },
+    { id: "settings", label: "Settings", roles: ["superAdmin"] },
+  ];
+
+  const visibleTabs = allTabs.filter((t) => t.roles.includes(session.role));
+  const activeTab = visibleTabs.find((t) => t.id === tab)
+    ? tab
+    : (visibleTabs[0]?.id ?? "add");
+
+  return (
+    <div style={s.root}>
+      {/* Header */}
+      <div style={s.header}>
+        <div>
+          <span style={s.headerTitle}>MISHI Internal Control Panel</span>
+          <span
+            style={{
+              marginLeft: "12px",
+              fontSize: "11px",
+              color: "#4a5568",
+              textTransform: "uppercase",
+              letterSpacing: "0.08em",
+            }}
+          >
+            Super Admin Dashboard
+          </span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <span
+            style={{
+              fontSize: "11px",
+              color: "#718096",
+              fontFamily: "monospace",
+            }}
+          >
+            {session.gmail}
+          </span>
+          <RoleBadge role={session.role} />
+          <button
+            type="button"
+            style={s.btnGhost}
+            data-ocid="dashboard.logout.button"
+            onClick={handleLogout}
+          >
+            Logout
+          </button>
+        </div>
+      </div>
+
+      {/* Tab Bar */}
+      <div
+        style={{
+          background: "#1a1d23",
+          borderBottom: "1px solid #2d3748",
+          padding: "0 24px",
+          display: "flex",
+          gap: "2px",
+        }}
+      >
+        {visibleTabs.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            data-ocid={`dashboard.${t.id}.tab`}
+            onClick={() => setTab(t.id)}
+            style={{
+              background: "transparent",
+              border: "none",
+              borderBottom:
+                activeTab === t.id
+                  ? "2px solid #3b82f6"
+                  : "2px solid transparent",
+              color: activeTab === t.id ? "#e2e8f0" : "#718096",
+              padding: "12px 18px",
+              fontSize: "13px",
+              fontWeight: activeTab === t.id ? 600 : 400,
+              cursor: "pointer",
+              fontFamily: "inherit",
+              transition: "color 0.15s, border-color 0.15s",
+            }}
+          >
+            {t.label}
+            {t.id === "team" && session.role === "superAdmin" && (
+              <span
+                style={{
+                  marginLeft: "6px",
+                  background: "#3b82f6",
+                  color: "#fff",
+                  fontSize: "10px",
+                  padding: "1px 5px",
+                  borderRadius: "9999px",
+                  fontWeight: 700,
+                }}
+              >
+                {teamMembers.length}
+              </span>
+            )}
+          </button>
+        ))}
+      </div>
+
+      {/* Activity Log (superAdmin only) */}
+      {session.role === "superAdmin" && <ActivityLogBar log={activityLog} />}
+
+      {/* Content */}
+      <div style={{ padding: "28px 24px", maxWidth: "1100px" }}>
+        {activeTab === "add" && <AddJewelryTab onLog={addLog} />}
+        {activeTab === "prices" && <ChangePricesTab onLog={addLog} />}
+        {activeTab === "orders" && session.role === "superAdmin" && (
+          <ViewOrdersTab />
+        )}
+        {activeTab === "team" && session.role === "superAdmin" && (
+          <TeamTab
+            teamMembers={teamMembers}
+            setTeamMembers={setTeamMembers}
+            onLog={addLog}
+            currentSession={session}
+            onRevokeCurrentUser={() => handleLogout()}
+          />
+        )}
+        {activeTab === "settings" && session.role === "superAdmin" && (
+          <SettingsTab
+            emergencyPin={emergencyPin}
+            setEmergencyPin={setEmergencyPin}
+            onForceLogoutAll={handleForceLogoutAll}
+            masterPassword={masterPassword}
+            onMasterPasswordChange={setMasterPassword}
+          />
+        )}
+      </div>
+    </div>
+  );
+}

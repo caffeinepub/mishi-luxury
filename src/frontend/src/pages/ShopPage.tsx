@@ -72,7 +72,16 @@ export default function ShopPage() {
           const price = getProductPrice(p, silverRate);
           const wished = wishlist.includes(p.id);
           return (
-            <div key={p.id} className="glass-card overflow-hidden group">
+            <div
+              key={p.id}
+              className="glass-card overflow-hidden group"
+              style={{
+                boxShadow:
+                  "0 4px 20px rgba(80,200,200,0.12), inset 0 0 0 1px rgba(255,255,255,0.9), inset 0 2px 20px rgba(255,255,255,0.5)",
+                borderRadius: "16px",
+                background: "#ffffff",
+              }}
+            >
               <button
                 type="button"
                 className="relative overflow-hidden cursor-pointer w-full"
@@ -132,13 +141,22 @@ export default function ShopPage() {
                 {p.category === "silver" && p.silverWeight && (
                   <p className="text-xs text-gray-500 mb-2">
                     {p.silverWeight}g × ₹{silverRate} + base ={" "}
-                    <span className="text-yellow-400">
+                    <span style={{ color: "#3d0070", fontWeight: 700 }}>
                       ₹{price.toLocaleString("en-IN")}
                     </span>
                   </p>
                 )}
                 <div className="flex items-center justify-between">
-                  <span className="gold-text font-bold text-lg">
+                  {/* PRICE — Deep Royal Purple override */}
+                  <span
+                    className="gold-text font-bold text-lg"
+                    style={{
+                      color: "#3d0070",
+                      fontWeight: 800,
+                      fontSize: "1.1rem",
+                      WebkitTextFillColor: "#3d0070",
+                    }}
+                  >
                     ₹{price.toLocaleString("en-IN")}
                   </span>
                   <button
