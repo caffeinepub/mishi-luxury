@@ -52,7 +52,7 @@ export default function Navbar() {
       }}
     >
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-        {/* Logo — mixBlendMode screen removes white box on dark bg */}
+        {/* Logo — mixBlendMode:screen removes white box on dark bg */}
         <button
           type="button"
           data-ocid="nav.home.link"
@@ -66,6 +66,8 @@ export default function Navbar() {
             className="h-9 w-auto"
             style={{
               mixBlendMode: "screen",
+              objectFit: "contain",
+              background: "transparent",
               filter:
                 "drop-shadow(0 0 6px rgba(212,175,55,0.45)) sepia(0.3) saturate(1.4) brightness(1.1)",
             }}

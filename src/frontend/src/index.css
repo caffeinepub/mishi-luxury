@@ -5,19 +5,34 @@
 @tailwind utilities;
 
 :root {
+  /* ── Warm Sunrise Palette ── */
   --teal: #0e7490;
-  --teal-light: #06b6d4;
-  --teal-dim: rgba(14, 116, 144, 0.28);
-  --lavender: #7c3aed;
+  --teal-light: #0891a8;
+  --teal-warm: #0a7a8c;
+  --teal-dim: rgba(8, 145, 168, 0.28);
+  --lavender: #5b21b6;
   --lavender-light: #a78bfa;
   --lavender-soft: #c4b5fd;
   --lavender-dim: rgba(167, 139, 250, 0.12);
   --gold: #d4af37;
-  --silver-teal: #c0e8ef;
-  --bg: #080b12;
-  --bg2: #0d1120;
-  --glass: rgba(6, 9, 18, 0.82);
-  --glass-border: rgba(14, 116, 144, 0.38);
+  --gold-warm: #d4af37;
+  --gold-amber: #c8800a;
+  --gold-horizon: #f0a830;
+  --silver-teal: #b8d8df;
+
+  /* ── Warm Background Tones ── */
+  --bg: #0d0818;
+  --bg2: #120a22;
+  --bg-warm: rgba(13, 8, 24, 0.95);
+  --purple-deep: #0d0818;
+  --purple-mid: #1a0a2e;
+
+  /* ── Glass ── */
+  --glass: rgba(10, 5, 20, 0.82);
+  --glass-border: rgba(180, 120, 40, 0.2);
+
+  /* Hero overlay */
+  --hero-bg-warm: rgba(13, 8, 24, 0.95);
 
   /* Legacy aliases */
   --gold-light: var(--lavender-light);
@@ -62,14 +77,14 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  filter: drop-shadow(0 0 18px rgba(212, 175, 55, 0.3));
+  filter: drop-shadow(0 0 22px rgba(212, 175, 55, 0.4));
 }
 
 /* Primary tagline — soft lavender, spaced uppercase */
 .tagline-lavender {
   color: #c4b5fd;
   letter-spacing: 0.32em;
-  text-shadow: 0 0 22px rgba(196, 181, 253, 0.28);
+  text-shadow: 0 0 22px rgba(196, 181, 253, 0.3);
 }
 
 /* ─── Glass Cards ────────────────────────────────────────── */
@@ -84,9 +99,9 @@ body {
 }
 
 .glass-card:hover {
-  box-shadow: 0 0 40px rgba(14, 116, 144, 0.2), 0 0 80px
-    rgba(167, 139, 250, 0.08);
-  border-color: rgba(14, 116, 144, 0.6);
+  box-shadow: 0 0 40px rgba(180, 120, 40, 0.18), 0 0 80px
+    rgba(107, 63, 160, 0.1);
+  border-color: rgba(212, 175, 55, 0.4);
 }
 
 /* ─── Color Utilities ────────────────────────────────────── */
@@ -95,7 +110,7 @@ body {
 }
 
 .teal-gradient {
-  background: linear-gradient(135deg, #06b6d4, #a78bfa);
+  background: linear-gradient(135deg, #0891a8, #a78bfa);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -106,7 +121,7 @@ body {
   color: var(--teal-light);
 }
 .gold-gradient {
-  background: linear-gradient(135deg, #06b6d4, #a78bfa);
+  background: linear-gradient(135deg, #0891a8, #a78bfa);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -115,7 +130,7 @@ body {
 /* ─── Buttons ────────────────────────────────────────────── */
 .btn-primary,
 .btn-gold {
-  background: linear-gradient(135deg, #0e7490, #7c3aed);
+  background: linear-gradient(135deg, #0e6b7d, #5b21b6);
   color: #e8f0f8;
   font-weight: 600;
   border: none;
@@ -129,8 +144,8 @@ body {
 }
 .btn-primary:hover,
 .btn-gold:hover {
-  box-shadow: 0 0 24px rgba(14, 116, 144, 0.4), 0 0 48px
-    rgba(167, 139, 250, 0.1);
+  box-shadow: 0 0 24px rgba(212, 175, 55, 0.3), 0 0 48px
+    rgba(107, 63, 160, 0.15);
   transform: translateY(-1px);
 }
 
@@ -138,7 +153,7 @@ body {
 .btn-outline-gold {
   background: transparent;
   color: var(--teal-light);
-  border: 1px solid rgba(14, 116, 144, 0.55);
+  border: 1px solid rgba(180, 120, 40, 0.5);
   padding: 10px 24px;
   border-radius: 6px;
   cursor: pointer;
@@ -150,9 +165,9 @@ body {
 }
 .btn-outline-primary:hover,
 .btn-outline-gold:hover {
-  background: rgba(14, 116, 144, 0.1);
-  border-color: var(--teal-light);
-  box-shadow: 0 0 18px rgba(14, 116, 144, 0.18);
+  background: rgba(212, 175, 55, 0.08);
+  border-color: rgba(212, 175, 55, 0.7);
+  box-shadow: 0 0 18px rgba(212, 175, 55, 0.15);
 }
 
 /* ─── Dividers ───────────────────────────────────────────── */
@@ -161,8 +176,9 @@ body {
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(212, 175, 55, 0.5),
-    rgba(196, 181, 253, 0.35),
+    rgba(212, 175, 55, 0.55),
+    rgba(240, 168, 48, 0.4),
+    rgba(196, 181, 253, 0.3),
     transparent
   );
   margin: 2rem 0;
@@ -176,17 +192,17 @@ body {
   background: var(--bg);
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(14, 116, 144, 0.45);
+  background: rgba(180, 120, 40, 0.45);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(14, 116, 144, 0.75);
+  background: rgba(212, 175, 55, 0.7);
 }
 
 /* ─── Readability: explicit overrides ───────────────────── */
 .text-gray-300 {
   opacity: 1 !important;
-  color: #aac8d4 !important;
+  color: #b0c8d4 !important;
 }
 .text-gray-400 {
   color: #7a9aaa;

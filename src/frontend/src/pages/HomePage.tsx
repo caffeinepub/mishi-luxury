@@ -1,4 +1,5 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import FounderModel3D from "../components/FounderModel3D";
 import { getProductPrice, useMishi } from "../store/store";
 
 export default function HomePage() {
@@ -8,29 +9,48 @@ export default function HomePage() {
   const heroRef = useRef<HTMLElement>(null);
   const bgImgRef = useRef<HTMLImageElement>(null);
   const atmoRef = useRef<HTMLDivElement>(null);
+  const mouseOffsetRef = useRef({ x: 0, y: 0 });
+
+  const [bubbleVisible, setBubbleVisible] = useState(false);
 
   useEffect(() => {
     const hero = heroRef.current;
     if (!hero) return;
+
+    const applyTransform = () => {
+      const scrollY = window.scrollY;
+      const { x: xBg, y: yBg } = mouseOffsetRef.current;
+      const scrollOffset = scrollY * 0.3;
+      if (bgImgRef.current) {
+        bgImgRef.current.style.transform = `translate(calc(-50% + ${xBg}px), calc(-50% + ${yBg - scrollOffset}px))`;
+      }
+      if (atmoRef.current) {
+        const xAtmo = xBg * 0.47;
+        const yAtmo = yBg * 0.5 - scrollOffset * 0.5;
+        atmoRef.current.style.transform = `translate(calc(-50% + ${xAtmo}px), calc(-50% + ${yAtmo}px))`;
+      }
+    };
+
     const handleMouseMove = (e: MouseEvent) => {
       const rect = hero.getBoundingClientRect();
       const cx = rect.width / 2;
       const cy = rect.height / 2;
       const dx = (e.clientX - rect.left - cx) / cx;
       const dy = (e.clientY - rect.top - cy) / cy;
-      const xBg = dx * -15;
-      const yBg = dy * -10;
-      const xAtmo = dx * -7;
-      const yAtmo = dy * -5;
-      if (bgImgRef.current) {
-        bgImgRef.current.style.transform = `translate(calc(-50% + ${xBg}px), calc(-50% + ${yBg}px))`;
-      }
-      if (atmoRef.current) {
-        atmoRef.current.style.transform = `translate(calc(-50% + ${xAtmo}px), calc(-50% + ${yAtmo}px))`;
-      }
+      mouseOffsetRef.current = { x: dx * -15, y: dy * -10 };
+      applyTransform();
     };
+
+    const handleScroll = () => {
+      applyTransform();
+    };
+
     hero.addEventListener("mousemove", handleMouseMove);
-    return () => hero.removeEventListener("mousemove", handleMouseMove);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      hero.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("scroll", handleScroll);
+    };
   }, []);
 
   return (
@@ -43,8 +63,8 @@ export default function HomePage() {
         {/* Background layer — moves at full parallax speed */}
         <img
           ref={bgImgRef}
-          src="/assets/generated/mishi-hero-lion.dim_1920x1080.jpg"
-          alt="MISHI Hero"
+          src="/assets/generated/hero-lion-lioness-sunrise.dim_1920x900.jpg"
+          alt="MISHI Royal Pair — The Lion and Lioness at Sunrise"
           style={{
             position: "absolute",
             left: "50%",
@@ -53,12 +73,12 @@ export default function HomePage() {
             width: "112%",
             height: "112%",
             objectFit: "cover",
-            filter: "brightness(0.40) saturate(1.15)",
+            filter: "brightness(0.42) saturate(1.25)",
             transition: "transform 0.85s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
             willChange: "transform",
           }}
         />
-        {/* Atmospheric depth layer — moves at half speed */}
+        {/* Atmospheric depth layer — warm purple-gold glow */}
         <div
           ref={atmoRef}
           style={{
@@ -69,39 +89,48 @@ export default function HomePage() {
             width: "112%",
             height: "112%",
             background:
-              "radial-gradient(ellipse 70% 60% at 50% 40%, rgba(6,182,212,0.09) 0%, rgba(196,181,253,0.06) 55%, transparent 100%)",
+              "radial-gradient(ellipse 70% 55% at 50% 62%, rgba(240,168,48,0.08) 0%, rgba(107,63,160,0.07) 55%, transparent 100%)",
             transition: "transform 0.85s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
             willChange: "transform",
             pointerEvents: "none",
           }}
         />
-        {/* Fixed depth vignette — bottom */}
+        {/* Vignette — bottom: warm deep purple */}
         <div
           className="absolute inset-0"
           style={{
             background:
-              "linear-gradient(to bottom, rgba(8,11,18,0.2) 0%, rgba(8,11,18,0.5) 55%, rgba(8,11,18,1) 100%)",
+              "linear-gradient(to bottom, rgba(13,8,24,0.2) 0%, rgba(13,8,24,0.5) 55%, rgba(13,8,24,0.95) 100%)",
             pointerEvents: "none",
           }}
         />
-        {/* Fixed depth vignette — edges */}
+        {/* Vignette — edges: warm dark purple */}
         <div
           className="absolute inset-0"
           style={{
             background:
-              "radial-gradient(ellipse 90% 85% at 50% 50%, transparent 52%, rgba(4,6,12,0.85) 100%)",
+              "radial-gradient(ellipse 90% 85% at 50% 50%, transparent 52%, rgba(8,4,18,0.85) 100%)",
+            pointerEvents: "none",
+          }}
+        />
+        {/* Sunrise horizon warmth glow at bottom */}
+        <div
+          className="absolute inset-x-0 bottom-0"
+          style={{
+            height: "35%",
+            background:
+              "linear-gradient(to top, rgba(200,128,10,0.06) 0%, rgba(107,63,160,0.04) 60%, transparent 100%)",
             pointerEvents: "none",
           }}
         />
 
         {/* Hero content */}
         <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
-          {/* Establishment label */}
           <p
             style={{
               fontSize: "0.68rem",
               letterSpacing: "0.45em",
-              color: "#5eead4",
+              color: "#c8a050",
               textTransform: "uppercase",
               marginBottom: "1.2rem",
               fontFamily: "Inter, sans-serif",
@@ -110,8 +139,6 @@ export default function HomePage() {
           >
             Est. 2025 · Mission 2028
           </p>
-
-          {/* MISHI — metallic gold cursive signature */}
           <h1
             className="mishi-brand-title"
             style={{
@@ -122,8 +149,6 @@ export default function HomePage() {
           >
             Mishi
           </h1>
-
-          {/* Tagline — elegant uppercase spaced lavender */}
           <p
             className="tagline-lavender"
             style={{
@@ -137,9 +162,7 @@ export default function HomePage() {
           >
             Where Love Unites Empires
           </p>
-
           <div className="royal-divider w-56 mx-auto" />
-
           <p
             style={{
               color: "#9abbc8",
@@ -164,7 +187,7 @@ export default function HomePage() {
           <span
             style={{
               fontSize: "0.65rem",
-              color: "#7aacb8",
+              color: "#c8a050",
               letterSpacing: "0.3em",
               textTransform: "uppercase",
               fontFamily: "Inter, sans-serif",
@@ -175,20 +198,27 @@ export default function HomePage() {
           <div
             className="w-px h-12"
             style={{
-              background: "linear-gradient(to bottom, #06b6d4, transparent)",
+              background:
+                "linear-gradient(to bottom, #d4af37, rgba(107,63,160,0.4), transparent)",
             }}
           />
         </div>
       </section>
 
       {/* Categories */}
-      <section className="py-20 px-6 max-w-6xl mx-auto">
+      <section
+        className="py-20 px-6 max-w-6xl mx-auto"
+        style={{
+          background:
+            "linear-gradient(180deg, transparent 0%, rgba(61,31,110,0.04) 50%, transparent 100%)",
+        }}
+      >
         <p
           style={{
             textAlign: "center",
             fontSize: "0.7rem",
             letterSpacing: "0.4em",
-            color: "#06b6d4",
+            color: "#c8a050",
             textTransform: "uppercase",
             marginBottom: "0.75rem",
           }}
@@ -245,7 +275,7 @@ export default function HomePage() {
                 className="absolute inset-0"
                 style={{
                   background:
-                    "linear-gradient(to top, rgba(8,11,18,0.95) 0%, rgba(8,11,18,0.25) 100%)",
+                    "linear-gradient(to top, rgba(13,8,24,0.95) 0%, rgba(13,8,24,0.25) 100%)",
                 }}
               />
               <div className="absolute bottom-0 left-0 p-8">
@@ -253,7 +283,7 @@ export default function HomePage() {
                   style={{
                     fontSize: "0.7rem",
                     letterSpacing: "0.25em",
-                    color: "#06b6d4",
+                    color: "#c8a050",
                     textTransform: "uppercase",
                   }}
                 >
@@ -276,7 +306,7 @@ export default function HomePage() {
                 <div
                   style={{
                     marginTop: "1rem",
-                    color: "#06b6d4",
+                    color: "#d4af37",
                     fontSize: "0.8rem",
                     letterSpacing: "0.2em",
                     textTransform: "uppercase",
@@ -299,15 +329,15 @@ export default function HomePage() {
           padding: "1rem 1.5rem",
           textAlign: "center",
           background:
-            "linear-gradient(90deg, rgba(14,116,144,0.05), rgba(14,116,144,0.14), rgba(14,116,144,0.05))",
-          borderTop: "1px solid rgba(14,116,144,0.22)",
-          borderBottom: "1px solid rgba(14,116,144,0.22)",
+            "linear-gradient(90deg, rgba(61,31,110,0.04), rgba(212,175,55,0.08), rgba(61,31,110,0.04))",
+          borderTop: "1px solid rgba(212,175,55,0.18)",
+          borderBottom: "1px solid rgba(212,175,55,0.18)",
         }}
       >
         <p style={{ fontSize: "0.875rem", letterSpacing: "0.04em" }}>
           <span
             style={{
-              color: "#5a7a88",
+              color: "#7a8a90",
               fontSize: "0.7rem",
               letterSpacing: "0.2em",
               textTransform: "uppercase",
@@ -315,12 +345,12 @@ export default function HomePage() {
           >
             {"Today's Live Silver Rate · "}
           </span>
-          <span style={{ color: "#06b6d4", fontWeight: 600 }}>
+          <span style={{ color: "#d4af37", fontWeight: 600 }}>
             ₹{silverRate}/gram
           </span>
           <span
             style={{
-              color: "#3d5a65",
+              color: "#4a5a65",
               fontSize: "0.7rem",
               marginLeft: "0.75rem",
             }}
@@ -337,7 +367,7 @@ export default function HomePage() {
             textAlign: "center",
             fontSize: "0.7rem",
             letterSpacing: "0.4em",
-            color: "#06b6d4",
+            color: "#c8a050",
             textTransform: "uppercase",
             marginBottom: "0.75rem",
           }}
@@ -383,14 +413,14 @@ export default function HomePage() {
                     className="absolute bottom-0 left-0 right-0 p-3"
                     style={{
                       background:
-                        "linear-gradient(to top, rgba(8,11,18,0.95), transparent)",
+                        "linear-gradient(to top, rgba(13,8,24,0.95), transparent)",
                     }}
                   >
                     <span
                       style={{
                         fontSize: "0.65rem",
                         letterSpacing: "0.2em",
-                        color: "#06b6d4",
+                        color: "#d4af37",
                         textTransform: "uppercase",
                       }}
                     >
@@ -425,7 +455,7 @@ export default function HomePage() {
                   )}
                   <p
                     style={{
-                      color: "#06b6d4",
+                      color: "#d4af37",
                       fontWeight: 600,
                       marginBottom: "0.75rem",
                     }}
@@ -465,7 +495,7 @@ export default function HomePage() {
         className="py-20 px-6"
         style={{
           background:
-            "linear-gradient(135deg, rgba(14,116,144,0.08), rgba(8,11,18,0), rgba(124,58,237,0.05))",
+            "linear-gradient(135deg, rgba(61,31,110,0.12), rgba(13,8,24,0), rgba(212,175,55,0.06))",
         }}
       >
         <div className="max-w-3xl mx-auto text-center">
@@ -473,7 +503,7 @@ export default function HomePage() {
             style={{
               fontSize: "0.7rem",
               letterSpacing: "0.4em",
-              color: "#06b6d4",
+              color: "#c8a050",
               textTransform: "uppercase",
               marginBottom: "1rem",
             }}
@@ -513,6 +543,322 @@ export default function HomePage() {
           >
             Read Our Story
           </button>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════ */}
+      {/* FOUNDERS SECTION — Interactive 3D Royal Guides */}
+      {/* ═══════════════════════════════════════════════ */}
+      <section
+        style={{
+          background:
+            "linear-gradient(135deg, rgba(13,8,24,1) 0%, rgba(20,8,35,0.98) 100%)",
+          borderTop: "1px solid rgba(212,175,55,0.2)",
+          padding: "6rem 1.5rem",
+        }}
+      >
+        <div className="max-w-6xl mx-auto">
+          {/* Section label */}
+          <p
+            style={{
+              textAlign: "center",
+              fontSize: "0.7rem",
+              letterSpacing: "0.4em",
+              color: "#c8a050",
+              textTransform: "uppercase",
+              marginBottom: "3.5rem",
+            }}
+          >
+            The Visionaries
+          </p>
+
+          <div
+            className="flex flex-col md:flex-row items-center justify-center"
+            style={{ gap: "4rem" }}
+          >
+            {/* ── LEFT: 3D Interactive Founders + speech bubble ── */}
+            <div
+              className="relative flex flex-col items-center"
+              data-ocid="founders.panel"
+            >
+              {/* Speech bubble */}
+              {bubbleVisible && (
+                <div
+                  data-ocid="founders.popover"
+                  style={{
+                    position: "absolute",
+                    bottom: "calc(100% + 8px)",
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    width: "clamp(240px, 60vw, 320px)",
+                    background: "rgba(13,5,28,0.94)",
+                    backdropFilter: "blur(20px)",
+                    WebkitBackdropFilter: "blur(20px)",
+                    border: "1px solid rgba(212,175,55,0.45)",
+                    borderRadius: "16px",
+                    padding: "1.4rem 1.4rem 1.2rem",
+                    boxShadow:
+                      "0 0 32px rgba(212,175,55,0.15), 0 0 64px rgba(107,63,160,0.12), 0 8px 32px rgba(0,0,0,0.6)",
+                    zIndex: 20,
+                    animation: "fadeInUp 0.28s ease",
+                  }}
+                >
+                  {/* Pointer triangle */}
+                  <div
+                    style={{
+                      position: "absolute",
+                      bottom: -9,
+                      left: "50%",
+                      transform: "translateX(-50%)",
+                      width: 0,
+                      height: 0,
+                      borderLeft: "9px solid transparent",
+                      borderRight: "9px solid transparent",
+                      borderTop: "9px solid rgba(212,175,55,0.45)",
+                    }}
+                  />
+                  <div
+                    style={{
+                      position: "absolute",
+                      bottom: -7,
+                      left: "50%",
+                      transform: "translateX(-50%)",
+                      width: 0,
+                      height: 0,
+                      borderLeft: "8px solid transparent",
+                      borderRight: "8px solid transparent",
+                      borderTop: "8px solid rgba(13,5,28,0.94)",
+                    }}
+                  />
+
+                  <p
+                    style={{
+                      fontFamily: "Cormorant Garamond, serif",
+                      fontSize: "1rem",
+                      fontStyle: "italic",
+                      color: "#d4af37",
+                      lineHeight: 1.65,
+                      marginBottom: "1rem",
+                      textAlign: "center",
+                    }}
+                  >
+                    Welcome to MISHI! Let us guide you through our Royal
+                    Vault...
+                  </p>
+
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: "0.75rem",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <button
+                      type="button"
+                      data-ocid="founders.collections.button"
+                      onClick={() => {
+                        setBubbleVisible(false);
+                        navigate("shop");
+                      }}
+                      style={{
+                        fontFamily: "Inter, sans-serif",
+                        fontSize: "0.72rem",
+                        letterSpacing: "0.18em",
+                        textTransform: "uppercase",
+                        color: "#d4af37",
+                        background: "transparent",
+                        border: "1px solid rgba(212,175,55,0.5)",
+                        borderRadius: "6px",
+                        padding: "0.45rem 1rem",
+                        cursor: "pointer",
+                        transition: "all 0.3s ease",
+                      }}
+                    >
+                      Collections
+                    </button>
+                    <button
+                      type="button"
+                      data-ocid="founders.legacy.button"
+                      onClick={() => {
+                        setBubbleVisible(false);
+                        navigate("legacy");
+                      }}
+                      style={{
+                        fontFamily: "Inter, sans-serif",
+                        fontSize: "0.72rem",
+                        letterSpacing: "0.18em",
+                        textTransform: "uppercase",
+                        color: "#c4b5fd",
+                        background: "transparent",
+                        border: "1px solid rgba(196,181,253,0.45)",
+                        borderRadius: "6px",
+                        padding: "0.45rem 1rem",
+                        cursor: "pointer",
+                        transition: "all 0.3s ease",
+                      }}
+                    >
+                      Our Legacy
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* 3D Interactive Model */}
+              <FounderModel3D onInteract={() => setBubbleVisible((v) => !v)} />
+
+              {/* Label below 3D model */}
+              <p
+                style={{
+                  marginTop: "0.5rem",
+                  fontSize: "0.65rem",
+                  letterSpacing: "0.35em",
+                  color: "#c8a050",
+                  textTransform: "uppercase",
+                  textAlign: "center",
+                }}
+              >
+                Your Royal Guides
+              </p>
+            </div>
+
+            {/* ── RIGHT: Founder Names ── */}
+            <div
+              className="flex flex-col items-center md:items-start"
+              style={{ maxWidth: 400 }}
+              data-ocid="founders.card"
+            >
+              {/* Our Founders title */}
+              <h2
+                style={{
+                  fontFamily: "Playfair Display, serif",
+                  fontSize: "2.2rem",
+                  fontWeight: 600,
+                  color: "#d4af37",
+                  marginBottom: "1rem",
+                  textAlign: "center",
+                  letterSpacing: "0.04em",
+                }}
+              >
+                Our Founders
+              </h2>
+
+              {/* Gold divider */}
+              <div
+                style={{
+                  width: "100%",
+                  maxWidth: 260,
+                  height: 1,
+                  background:
+                    "linear-gradient(90deg, transparent, #d4af37, #f0a830, #d4af37, transparent)",
+                  marginBottom: "2rem",
+                  alignSelf: "center",
+                }}
+              />
+
+              {/* Founder names with metallic gold gradient */}
+              <div
+                style={{
+                  filter: "drop-shadow(0 0 12px rgba(212,175,55,0.4))",
+                  textAlign: "center",
+                  alignSelf: "center",
+                }}
+              >
+                <p
+                  style={{
+                    fontFamily: "Great Vibes, cursive",
+                    fontSize: "clamp(2.5rem, 5vw, 4rem)",
+                    lineHeight: 1.2,
+                    background:
+                      "linear-gradient(135deg, #c9a84c 0%, #f5d98b 25%, #d4af37 45%, #fceab0 60%, #b8860b 80%, #e8c84a 100%)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    backgroundClip: "text",
+                  }}
+                >
+                  Mohit Gujrati
+                </p>
+
+                <p
+                  style={{
+                    fontFamily: "Playfair Display, serif",
+                    fontStyle: "italic",
+                    fontSize: "1.2rem",
+                    color: "#d4af37",
+                    lineHeight: 1.8,
+                    display: "block",
+                  }}
+                >
+                  &amp;
+                </p>
+
+                <p
+                  style={{
+                    fontFamily: "Great Vibes, cursive",
+                    fontSize: "clamp(2.5rem, 5vw, 4rem)",
+                    lineHeight: 1.2,
+                    background:
+                      "linear-gradient(135deg, #c9a84c 0%, #f5d98b 25%, #d4af37 45%, #fceab0 60%, #b8860b 80%, #e8c84a 100%)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    backgroundClip: "text",
+                  }}
+                >
+                  Shivani Rana
+                </p>
+              </div>
+
+              {/* Attire description */}
+              <div
+                style={{
+                  marginTop: "1.5rem",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "0.6rem",
+                  alignSelf: "center",
+                  textAlign: "center",
+                }}
+              >
+                <p
+                  style={{
+                    fontFamily: "Cormorant Garamond, serif",
+                    fontStyle: "italic",
+                    fontSize: "0.9rem",
+                    color: "#9abbc8",
+                    letterSpacing: "0.03em",
+                  }}
+                >
+                  🤴 Navy-Teal Velvet Kurta · Gold Zari · Ivory Shawl
+                </p>
+                <p
+                  style={{
+                    fontFamily: "Cormorant Garamond, serif",
+                    fontStyle: "italic",
+                    fontSize: "0.9rem",
+                    color: "#c4b5fd",
+                    letterSpacing: "0.03em",
+                  }}
+                >
+                  👸 Teal-Gold Saree · Maang Tikka · Jhumkas · Layered Necklace
+                </p>
+              </div>
+
+              {/* Tagline */}
+              <p
+                style={{
+                  fontFamily: "Cormorant Garamond, serif",
+                  fontStyle: "italic",
+                  fontSize: "1rem",
+                  color: "#c4b5fd",
+                  marginTop: "1.5rem",
+                  textAlign: "center",
+                  letterSpacing: "0.04em",
+                  alignSelf: "center",
+                }}
+              >
+                The Visionaries Behind the Royal Vault
+              </p>
+            </div>
+          </div>
         </div>
       </section>
     </div>
