@@ -58,7 +58,7 @@ const MOCK_PRODUCTS: Product[] = [
     sizes: [],
     stock: 15,
     isActive: true,
-    imageUrl: "https://picsum.photos/seed/mishi1/400/500",
+    imageUrl: "/assets/generated/product-chandbali.dim_400x500.jpg",
   },
   {
     id: 2,
@@ -72,7 +72,7 @@ const MOCK_PRODUCTS: Product[] = [
     sizes: [],
     stock: 8,
     isActive: true,
-    imageUrl: "https://picsum.photos/seed/mishi2/400/500",
+    imageUrl: "/assets/generated/product-necklace-set.dim_400x500.jpg",
   },
   {
     id: 3,
@@ -90,7 +90,7 @@ const MOCK_PRODUCTS: Product[] = [
     ],
     stock: 17,
     isActive: true,
-    imageUrl: "https://picsum.photos/seed/mishi3/400/500",
+    imageUrl: "/assets/generated/product-lehenga.dim_400x500.jpg",
   },
   {
     id: 4,
@@ -108,7 +108,7 @@ const MOCK_PRODUCTS: Product[] = [
     ],
     stock: 17,
     isActive: true,
-    imageUrl: "https://picsum.photos/seed/mishi4/400/500",
+    imageUrl: "/assets/generated/product-sherwani.dim_400x500.jpg",
   },
   {
     id: 5,
@@ -122,7 +122,7 @@ const MOCK_PRODUCTS: Product[] = [
     sizes: [],
     stock: 12,
     isActive: true,
-    imageUrl: "https://picsum.photos/seed/mishi5/400/500",
+    imageUrl: "/assets/generated/product-kada.dim_400x500.jpg",
   },
   {
     id: 6,
@@ -140,9 +140,20 @@ const MOCK_PRODUCTS: Product[] = [
     ],
     stock: 14,
     isActive: true,
-    imageUrl: "https://picsum.photos/seed/mishi6/400/500",
+    imageUrl: "/assets/generated/product-anarkali.dim_400x500.jpg",
   },
 ];
+
+const DEFAULT_SITE_IMAGES = {
+  heroUrl:
+    "/assets/generated/mishi-hero-lion-lioness-cliff-guardians.dim_1920x900.jpg",
+  logoUrl: "/assets/generated/mishi-logo-pure-transparent.dim_800x800.png",
+  necklaceImg: "/assets/generated/product-necklace-set.dim_400x500.jpg",
+  ringsImg: "/assets/generated/product-chandbali.dim_400x500.jpg",
+  banglesImg: "/assets/generated/product-kada.dim_400x500.jpg",
+  earringsImg: "/assets/generated/product-chandbali.dim_400x500.jpg",
+  ethnicImg: "/assets/generated/product-lehenga.dim_400x500.jpg",
+};
 
 interface MishiStore {
   silverRate: number;
@@ -155,6 +166,17 @@ interface MishiStore {
   phone: string;
   adminLevel: "primary" | "secondary" | "customer" | null;
   currentPage: string;
+  siteImages: {
+    heroUrl: string;
+    logoUrl: string;
+    necklaceImg: string;
+    ringsImg: string;
+    banglesImg: string;
+    earringsImg: string;
+    ethnicImg: string;
+  };
+  updateSiteImage: (key: keyof MishiStore["siteImages"], value: string) => void;
+  resetProducts: () => void;
 
   setSilverRate: (rate: number) => void;
   navigate: (page: string) => void;
@@ -202,9 +224,16 @@ export const useMishi = create<MishiStore>()(
       phone: "",
       adminLevel: null,
       currentPage: "home",
+      siteImages: DEFAULT_SITE_IMAGES,
 
       setSilverRate: (rate) => set({ silverRate: rate }),
+      updateSiteImage: (key, value) =>
+        set((state) => ({ siteImages: { ...state.siteImages, [key]: value } })),
       navigate: (page) => set({ currentPage: page }),
+
+      // Force-reset products to fix any cached broken picsum URLs
+      resetProducts: () =>
+        set({ products: MOCK_PRODUCTS, siteImages: DEFAULT_SITE_IMAGES }),
 
       addToCart: (productId, quantity, selectedSize) =>
         set((state) => {
@@ -335,7 +364,20 @@ export const useMishi = create<MishiStore>()(
           ),
         })),
     }),
-    { name: "mishi-store" },
+    {
+      name: "mishi-store-v2", // bumped version to clear old cached broken data
+      partialize: (state) => ({
+        cart: state.cart,
+        wishlist: state.wishlist,
+        orders: state.orders,
+        nextOrderId: state.nextOrderId,
+        isLoggedIn: state.isLoggedIn,
+        phone: state.phone,
+        adminLevel: state.adminLevel,
+        silverRate: state.silverRate,
+        // Do NOT persist products or siteImages — always use fresh defaults
+      }),
+    },
   ),
 );
 

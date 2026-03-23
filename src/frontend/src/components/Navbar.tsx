@@ -11,6 +11,7 @@ export default function Navbar() {
     isLoggedIn,
     adminLevel,
     logout,
+    siteImages,
   } = useMishi();
   const [open, setOpen] = useState(false);
   const cartCount = cart.reduce((s, i) => s + i.quantity, 0);
@@ -80,7 +81,7 @@ export default function Navbar() {
         >
           {/* Pure transparent golden logo — no blend mode tricks needed */}
           <img
-            src="/assets/generated/mishi-logo-pure-transparent.dim_800x800.png"
+            src={siteImages.logoUrl}
             alt="MISHI Logo"
             style={{
               width: 24,

@@ -1,20 +1,21 @@
-import { useEffect, useState } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import FounderGuides from "./components/FounderGuides";
 import MishiButler from "./components/MishiButler";
 import Navbar from "./components/Navbar";
-import CartPage from "./pages/CartPage";
-import HomePage from "./pages/HomePage";
-import InternalControlPage from "./pages/InternalControlPage";
-import LegacyPage from "./pages/LegacyPage";
-import LoginPage from "./pages/LoginPage";
-import OrdersPage from "./pages/OrdersPage";
-import PrimaryAdminPage from "./pages/PrimaryAdminPage";
-import ProductDetailPage from "./pages/ProductDetailPage";
-import SecondaryAdminPage from "./pages/SecondaryAdminPage";
-import ShopPage from "./pages/ShopPage";
-import VaultPage from "./pages/VaultPage";
-import WishlistPage from "./pages/WishlistPage";
 import { useMishi } from "./store/store";
+
+const CartPage = lazy(() => import("./pages/CartPage"));
+const HomePage = lazy(() => import("./pages/HomePage"));
+const InternalControlPage = lazy(() => import("./pages/InternalControlPage"));
+const LegacyPage = lazy(() => import("./pages/LegacyPage"));
+const LoginPage = lazy(() => import("./pages/LoginPage"));
+const OrdersPage = lazy(() => import("./pages/OrdersPage"));
+const PrimaryAdminPage = lazy(() => import("./pages/PrimaryAdminPage"));
+const ProductDetailPage = lazy(() => import("./pages/ProductDetailPage"));
+const SecondaryAdminPage = lazy(() => import("./pages/SecondaryAdminPage"));
+const ShopPage = lazy(() => import("./pages/ShopPage"));
+const VaultPage = lazy(() => import("./pages/VaultPage"));
+const WishlistPage = lazy(() => import("./pages/WishlistPage"));
 
 function PageRouter() {
   const { currentPage } = useMishi();
@@ -174,14 +175,26 @@ export default function App() {
     typeof window !== "undefined" &&
     window.location.pathname === "/mishi-internal-control"
   ) {
-    return <InternalControlPage />;
+    return (
+      <Suspense
+        fallback={<div style={{ minHeight: "100vh", background: "#080b12" }} />}
+      >
+        <InternalControlPage />
+      </Suspense>
+    );
   }
 
   return (
     <div style={{ minHeight: "100vh", background: "#080b12" }}>
       <Navbar />
       <main>
-        <PageRouter />
+        <Suspense
+          fallback={
+            <div style={{ minHeight: "100vh", background: "#080b12" }} />
+          }
+        >
+          <PageRouter />
+        </Suspense>
       </main>
       <MishiButler />
       <FounderGuides />

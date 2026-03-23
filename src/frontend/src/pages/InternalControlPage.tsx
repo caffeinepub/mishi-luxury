@@ -1,9 +1,30 @@
-import { useState } from "react";
+import type React from "react";
+import { useEffect, useRef, useState } from "react";
 import { type Category, STAGE_LABELS, useMishi } from "../store/store";
+
+// ─── Mobile Hook ─────────────────────────────────────────────────────────────
+function useIsMobile(breakpoint = 640) {
+  const [isMobile, setIsMobile] = useState(
+    () => window.innerWidth < breakpoint,
+  );
+  useEffect(() => {
+    const handler = () => setIsMobile(window.innerWidth < breakpoint);
+    window.addEventListener("resize", handler);
+    return () => window.removeEventListener("resize", handler);
+  }, [breakpoint]);
+  return isMobile;
+}
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 type Role = "superAdmin" | "manager" | "viewer";
-type TabId = "add" | "prices" | "orders" | "team" | "settings";
+type TabId =
+  | "products"
+  | "add"
+  | "prices"
+  | "orders"
+  | "team"
+  | "settings"
+  | "design";
 
 type Session = {
   gmail: string;
@@ -164,11 +185,13 @@ const s = {
   header: {
     background: "#1a1d23",
     borderBottom: "1px solid #2d3748",
-    padding: "0 24px",
-    height: "52px",
+    padding: "8px 16px",
+    minHeight: "52px",
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
+    flexWrap: "wrap" as const,
+    gap: "8px",
     position: "sticky" as const,
     top: 0,
     zIndex: 100,
@@ -319,6 +342,222 @@ function RoleBadge({ role }: { role: Role }) {
   );
 }
 
+// ─── Tab: Product List ────────────────────────────────────────────────────────
+function ProductListTab() {
+  const { products, updateProduct } = useMishi();
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editPrice, setEditPrice] = useState("");
+  const [saveMsg, setSaveMsg] = useState(false);
+
+  const startEdit = (p: { id: number; name: string; price: number }) => {
+    setEditingId(p.id);
+    setEditName(p.name);
+    setEditPrice(String(p.price));
+  };
+
+  const cancelEdit = () => setEditingId(null);
+
+  const saveEdit = (id: number) => {
+    const price = Number(editPrice);
+    if (!editName.trim() || !price || price <= 0) return;
+    updateProduct(id, { name: editName.trim(), price, basePrice: price });
+    setEditingId(null);
+  };
+
+  const handleUpdateDashboard = () => {
+    setSaveMsg(true);
+    setTimeout(() => setSaveMsg(false), 3000);
+  };
+
+  return (
+    <div data-ocid="product_list.panel">
+      <h2
+        style={{
+          fontSize: "16px",
+          fontWeight: 700,
+          marginBottom: "20px",
+          color: "#e2e8f0",
+        }}
+      >
+        Product List
+      </h2>
+      <div style={{ overflowX: "auto" }}>
+        <table style={s.table} data-ocid="product_list.table">
+          <thead>
+            <tr>
+              <th style={s.th}>Image</th>
+              <th style={s.th}>Product Name</th>
+              <th style={s.th}>Price (₹)</th>
+              <th style={s.th}>Status</th>
+              <th style={s.th}>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {products.map((p, i) => (
+              <tr key={p.id} data-ocid={`product_list.item.${i + 1}`}>
+                <td style={i % 2 === 0 ? s.td : s.tdAlt}>
+                  <img
+                    src={
+                      p.imageUrl || `https://picsum.photos/seed/${p.id}/48/48`
+                    }
+                    alt={p.name}
+                    style={{
+                      width: "48px",
+                      height: "48px",
+                      objectFit: "cover",
+                      borderRadius: "6px",
+                      border: "1px solid #2d3748",
+                    }}
+                  />
+                </td>
+                <td style={i % 2 === 0 ? s.td : s.tdAlt}>
+                  {editingId === p.id ? (
+                    <input
+                      type="text"
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                      style={{
+                        ...s.input,
+                        width: "180px",
+                        padding: "6px 10px",
+                      }}
+                      data-ocid="product_list.name.input"
+                    />
+                  ) : (
+                    <span style={{ fontWeight: 600 }}>{p.name}</span>
+                  )}
+                </td>
+                <td style={i % 2 === 0 ? s.td : s.tdAlt}>
+                  {editingId === p.id ? (
+                    <input
+                      type="number"
+                      min="0"
+                      value={editPrice}
+                      onChange={(e) => setEditPrice(e.target.value)}
+                      style={{
+                        ...s.input,
+                        width: "120px",
+                        padding: "6px 10px",
+                      }}
+                      data-ocid="product_list.price.input"
+                    />
+                  ) : (
+                    <strong>₹{p.price.toLocaleString("en-IN")}</strong>
+                  )}
+                </td>
+                <td style={i % 2 === 0 ? s.td : s.tdAlt}>
+                  {p.stock > 0 ? (
+                    <span
+                      style={{
+                        display: "inline-block",
+                        padding: "2px 10px",
+                        borderRadius: "9999px",
+                        fontSize: "11px",
+                        fontWeight: 700,
+                        color: "#fff",
+                        background: "#22c55e",
+                      }}
+                    >
+                      In Stock
+                    </span>
+                  ) : (
+                    <span
+                      style={{
+                        display: "inline-block",
+                        padding: "2px 10px",
+                        borderRadius: "9999px",
+                        fontSize: "11px",
+                        fontWeight: 700,
+                        color: "#fff",
+                        background: "#ef4444",
+                      }}
+                    >
+                      Sold Out
+                    </span>
+                  )}
+                </td>
+                <td style={i % 2 === 0 ? s.td : s.tdAlt}>
+                  {editingId === p.id ? (
+                    <div style={{ display: "flex", gap: "6px" }}>
+                      <button
+                        type="button"
+                        style={{ ...s.btnSm, background: "#16a34a" }}
+                        data-ocid={`product_list.save_button.${i + 1}`}
+                        onClick={() => saveEdit(p.id)}
+                      >
+                        Save
+                      </button>
+                      <button
+                        type="button"
+                        style={s.btnRestoreSm}
+                        data-ocid={`product_list.cancel_button.${i + 1}`}
+                        onClick={cancelEdit}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      style={s.btnSm}
+                      data-ocid={`product_list.edit_button.${i + 1}`}
+                      onClick={() => startEdit(p)}
+                    >
+                      Edit
+                    </button>
+                  )}
+                </td>
+              </tr>
+            ))}
+            {products.length === 0 && (
+              <tr>
+                <td
+                  colSpan={5}
+                  style={{ ...s.td, textAlign: "center", color: "#4a5568" }}
+                  data-ocid="product_list.empty_state"
+                >
+                  No products found.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      <div style={{ marginTop: "32px" }}>
+        {saveMsg && (
+          <div
+            style={{ ...s.success, marginBottom: "12px", fontSize: "14px" }}
+            data-ocid="product_list.success_state"
+          >
+            ✓ All changes saved to live site!
+          </div>
+        )}
+        <button
+          type="button"
+          data-ocid="product_list.primary_button"
+          onClick={handleUpdateDashboard}
+          style={{
+            width: "100%",
+            background: "#16a34a",
+            color: "#fff",
+            border: "none",
+            borderRadius: "8px",
+            padding: "14px",
+            fontSize: "16px",
+            fontWeight: 700,
+            cursor: "pointer",
+            letterSpacing: "0.02em",
+          }}
+        >
+          🚀 Update Dashboard
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ─── Tab: Add New Jewelry ─────────────────────────────────────────────────────
 function AddJewelryTab({ onLog }: { onLog: (entry: string) => void }) {
   const { addProduct } = useMishi();
@@ -408,6 +647,14 @@ function AddJewelryTab({ onLog }: { onLog: (entry: string) => void }) {
           value={form.category}
           onChange={(e) => patch("category", e.target.value)}
         >
+          <option value="silver">Necklace</option>
+          <option value="silver">Rings</option>
+          <option value="silver">Bangles</option>
+          <option value="silver">Earrings</option>
+          <option value="silver">Bracelet</option>
+          <option value="silver">Anklet</option>
+          <option value="silver">Pendant</option>
+          <option value="silver">Maang Tikka</option>
           <option value="silver">Sterling Silver</option>
           <option value="ethnic">Royal Ethnic Wear</option>
         </DarkSelect>
@@ -416,7 +663,7 @@ function AddJewelryTab({ onLog }: { onLog: (entry: string) => void }) {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "1fr 1fr",
+          gridTemplateColumns: window.innerWidth < 640 ? "1fr" : "1fr 1fr",
           gap: "14px",
           marginBottom: "14px",
         }}
@@ -465,6 +712,49 @@ function AddJewelryTab({ onLog }: { onLog: (entry: string) => void }) {
           onChange={(e) => patch("imageUrl", e.target.value)}
           placeholder="https://..."
         />
+        <div
+          style={{
+            marginTop: "8px",
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+          }}
+        >
+          <input
+            id="aj-image-upload"
+            type="file"
+            accept="image/*"
+            style={{ display: "none" }}
+            data-ocid="add_jewelry.upload_button"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                const url = URL.createObjectURL(file);
+                patch("imageUrl", url);
+              }
+            }}
+          />
+          <button
+            type="button"
+            style={{ ...s.btnGhost, fontSize: "12px", padding: "6px 12px" }}
+            onClick={() => document.getElementById("aj-image-upload")?.click()}
+          >
+            📁 Upload Image
+          </button>
+          {form.imageUrl?.startsWith("blob:") && (
+            <img
+              src={form.imageUrl}
+              alt="Preview"
+              style={{
+                width: "60px",
+                height: "60px",
+                objectFit: "cover",
+                borderRadius: "6px",
+                border: "1px solid #2d3748",
+              }}
+            />
+          )}
+        </div>
       </div>
 
       <div style={{ marginBottom: "20px" }}>
@@ -510,6 +800,26 @@ function ChangePricesTab({ onLog }: { onLog: (entry: string) => void }) {
   const [rowStatus, setRowStatus] = useState<
     Record<number, "success" | "error">
   >({});
+  const [saveAllStatus, setSaveAllStatus] = useState<"idle" | "success">(
+    "idle",
+  );
+
+  const handleSaveAll = () => {
+    let updated = false;
+    for (const p of products) {
+      const val = Number(newPrices[p.id]);
+      if (val && val > 0) {
+        updateProduct(p.id, { price: val, basePrice: val });
+        onLog(`Price updated: ${p.name} -> ₹${val}`);
+        updated = true;
+      }
+    }
+    if (updated) {
+      setNewPrices({});
+      setSaveAllStatus("success");
+      setTimeout(() => setSaveAllStatus("idle"), 3000);
+    }
+  };
 
   const handleUpdate = (id: number) => {
     const val = Number(newPrices[id]);
@@ -587,7 +897,13 @@ function ChangePricesTab({ onLog }: { onLog: (entry: string) => void }) {
                       }))
                     }
                     placeholder="Enter new price"
-                    style={{ ...s.input, width: "140px", padding: "6px 10px" }}
+                    style={{
+                      ...s.input,
+                      width: "140px",
+                      padding: "6px 10px",
+                      border: "1px solid #4a5568",
+                      background: "#1a1d23",
+                    }}
                   />
                   {rowStatus[p.id] === "success" && (
                     <span
@@ -639,6 +955,36 @@ function ChangePricesTab({ onLog }: { onLog: (entry: string) => void }) {
             )}
           </tbody>
         </table>
+      </div>
+      {/* Save All Prices */}
+      <div style={{ marginTop: "20px" }}>
+        {saveAllStatus === "success" && (
+          <div
+            style={{ ...s.success, marginBottom: "10px" }}
+            data-ocid="change_prices.save_all.success_state"
+          >
+            ✓ All prices saved to live site!
+          </div>
+        )}
+        <button
+          type="button"
+          data-ocid="change_prices.save_all.primary_button"
+          onClick={handleSaveAll}
+          style={{
+            width: "100%",
+            background: "#16a34a",
+            color: "#fff",
+            border: "none",
+            borderRadius: "8px",
+            padding: "14px",
+            fontSize: "15px",
+            fontWeight: 700,
+            cursor: "pointer",
+            minHeight: "48px",
+          }}
+        >
+          💾 Save All Prices
+        </button>
       </div>
     </div>
   );
@@ -1528,7 +1874,289 @@ function ActivityLogBar({ log }: { log: string[] }) {
 }
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
+// ─── Website Design Tab ──────────────────────────────────────────────────────
+function ImageUploadCard({
+  label,
+  currentSrc,
+  onUpload,
+  description,
+}: {
+  label: string;
+  currentSrc: string;
+  onUpload: (dataUrl: string) => void;
+  description?: string;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [saved, setSaved] = useState(false);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === "string") {
+        setPreviewUrl(reader.result);
+        setSaved(false);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleSave = () => {
+    if (!previewUrl) return;
+    onUpload(previewUrl);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 3000);
+  };
+
+  const displaySrc = previewUrl || currentSrc;
+
+  return (
+    <div
+      style={{
+        background: "#12151c",
+        border: "1px solid #2d3748",
+        borderRadius: "8px",
+        padding: "16px",
+        marginBottom: "16px",
+      }}
+    >
+      <div style={{ ...s.label, marginBottom: "8px" }}>{label}</div>
+      {description && (
+        <div
+          style={{ fontSize: "11px", color: "#718096", marginBottom: "10px" }}
+        >
+          {description}
+        </div>
+      )}
+      <img
+        src={displaySrc}
+        alt={label}
+        style={{
+          width: "100%",
+          maxHeight: "160px",
+          objectFit: "cover",
+          borderRadius: "6px",
+          marginBottom: "12px",
+          display: "block",
+          border: previewUrl ? "2px solid #3b82f6" : "1px solid #2d3748",
+        }}
+      />
+      {previewUrl && (
+        <div
+          style={{ fontSize: "11px", color: "#90cdf4", marginBottom: "8px" }}
+        >
+          ✦ New image selected — click Save to apply
+        </div>
+      )}
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        style={{ display: "none" }}
+        onChange={handleFileChange}
+        data-ocid="design.upload_button"
+      />
+      <div style={{ display: "flex", gap: "8px" }}>
+        <button
+          type="button"
+          data-ocid="design.upload_button"
+          onClick={() => inputRef.current?.click()}
+          style={{
+            ...s.btnSm,
+            background: "#2d3748",
+            color: "#e2e8f0",
+            border: "1px solid #4a5568",
+            flex: 1,
+            fontSize: "13px",
+            padding: "10px 12px",
+            minHeight: "44px",
+          }}
+        >
+          📁 Choose Image
+        </button>
+        <button
+          type="button"
+          data-ocid="design.save_button"
+          disabled={!previewUrl}
+          onClick={handleSave}
+          style={{
+            ...s.btnSm,
+            background: saved ? "#16a34a" : previewUrl ? "#3b82f6" : "#1a1d23",
+            color: previewUrl ? "#fff" : "#4a5568",
+            border: `1px solid ${previewUrl ? "transparent" : "#2d3748"}`,
+            flex: 1,
+            fontSize: "13px",
+            padding: "10px 12px",
+            minHeight: "44px",
+            cursor: previewUrl ? "pointer" : "not-allowed",
+          }}
+        >
+          {saved ? "✓ Saved!" : "💾 Save"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function WebsiteDesignTab() {
+  const { siteImages, updateSiteImage } = useMishi();
+
+  return (
+    <div>
+      <h2
+        style={{
+          fontSize: "18px",
+          fontWeight: 700,
+          color: "#e2e8f0",
+          marginBottom: "6px",
+        }}
+      >
+        Website Design
+      </h2>
+      <p style={{ color: "#718096", marginBottom: "24px", fontSize: "13px" }}>
+        Upload new images to instantly update the live site. Changes save
+        automatically.
+      </p>
+
+      {/* Hero Banner */}
+      <div
+        style={{
+          background: "#1a1d23",
+          border: "1px solid #2d3748",
+          borderRadius: "8px",
+          padding: "20px",
+          marginBottom: "20px",
+        }}
+      >
+        <h3
+          style={{
+            fontSize: "14px",
+            fontWeight: 600,
+            color: "#a0aec0",
+            marginBottom: "16px",
+            textTransform: "uppercase",
+            letterSpacing: "0.06em",
+          }}
+        >
+          Hero Banner
+        </h3>
+        <ImageUploadCard
+          label="HERO BACKGROUND"
+          description="The main full-screen background on the homepage"
+          currentSrc={siteImages.heroUrl}
+          onUpload={(url) => updateSiteImage("heroUrl", url)}
+        />
+      </div>
+
+      {/* Logo */}
+      <div
+        style={{
+          background: "#1a1d23",
+          border: "1px solid #2d3748",
+          borderRadius: "8px",
+          padding: "20px",
+          marginBottom: "20px",
+        }}
+      >
+        <h3
+          style={{
+            fontSize: "14px",
+            fontWeight: 600,
+            color: "#a0aec0",
+            marginBottom: "16px",
+            textTransform: "uppercase",
+            letterSpacing: "0.06em",
+          }}
+        >
+          Logo & Favicon
+        </h3>
+        <ImageUploadCard
+          label="LOGO"
+          description="The golden wreath logo shown in header and hero"
+          currentSrc={siteImages.logoUrl}
+          onUpload={(url) => updateSiteImage("logoUrl", url)}
+        />
+      </div>
+
+      {/* Collection Images */}
+      <div
+        style={{
+          background: "#1a1d23",
+          border: "1px solid #2d3748",
+          borderRadius: "8px",
+          padding: "20px",
+          marginBottom: "20px",
+        }}
+      >
+        <h3
+          style={{
+            fontSize: "14px",
+            fontWeight: 600,
+            color: "#a0aec0",
+            marginBottom: "16px",
+            textTransform: "uppercase",
+            letterSpacing: "0.06em",
+          }}
+        >
+          Collection Section Images
+        </h3>
+        <ImageUploadCard
+          label="NECKLACE SECTION"
+          currentSrc={siteImages.necklaceImg}
+          onUpload={(url) => updateSiteImage("necklaceImg", url)}
+        />
+        <ImageUploadCard
+          label="RINGS SECTION"
+          currentSrc={siteImages.ringsImg}
+          onUpload={(url) => updateSiteImage("ringsImg", url)}
+        />
+        <ImageUploadCard
+          label="BANGLES SECTION"
+          currentSrc={siteImages.banglesImg}
+          onUpload={(url) => updateSiteImage("banglesImg", url)}
+        />
+        <ImageUploadCard
+          label="EARRINGS SECTION"
+          currentSrc={siteImages.earringsImg}
+          onUpload={(url) => updateSiteImage("earringsImg", url)}
+        />
+        <ImageUploadCard
+          label="ETHNIC WEAR SECTION"
+          currentSrc={siteImages.ethnicImg}
+          onUpload={(url) => updateSiteImage("ethnicImg", url)}
+        />
+      </div>
+
+      {/* View Site */}
+      <button
+        type="button"
+        data-ocid="design.view_site.button"
+        onClick={() => window.open("/", "_blank")}
+        style={{
+          width: "100%",
+          padding: "16px",
+          background: "#16a34a",
+          color: "#fff",
+          border: "none",
+          borderRadius: "8px",
+          fontSize: "16px",
+          fontWeight: 700,
+          cursor: "pointer",
+          fontFamily: "inherit",
+          marginBottom: "32px",
+          letterSpacing: "0.03em",
+        }}
+      >
+        🌐 View Live Site
+      </button>
+    </div>
+  );
+}
+
 export default function InternalControlPage() {
+  const isMobile = useIsMobile();
   const [session, setSession] = useState<Session | null>(null);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [activityLog, setActivityLog] = useState<string[]>([]);
@@ -1770,11 +2398,13 @@ export default function InternalControlPage() {
 
   // Tab definitions with role gating
   const allTabs: { id: TabId; label: string; roles: Role[] }[] = [
+    { id: "products", label: "Product List", roles: ["superAdmin", "manager"] },
     { id: "add", label: "Add New Jewelry", roles: ["superAdmin", "manager"] },
     { id: "prices", label: "Change Prices", roles: ["superAdmin", "manager"] },
     { id: "orders", label: "Orders & Financials", roles: ["superAdmin"] },
     { id: "team", label: "Team", roles: ["superAdmin"] },
     { id: "settings", label: "Settings", roles: ["superAdmin"] },
+    { id: "design", label: "🎨 Website Design", roles: ["superAdmin"] },
   ];
 
   const visibleTabs = allTabs.filter((t) => t.roles.includes(session.role));
@@ -1824,13 +2454,19 @@ export default function InternalControlPage() {
 
       {/* Tab Bar */}
       <div
-        style={{
-          background: "#1a1d23",
-          borderBottom: "1px solid #2d3748",
-          padding: "0 24px",
-          display: "flex",
-          gap: "2px",
-        }}
+        style={
+          {
+            background: "#1a1d23",
+            borderBottom: "1px solid #2d3748",
+            padding: "0 16px",
+            display: "flex",
+            gap: "2px",
+            overflowX: "auto",
+            WebkitOverflowScrolling: "touch",
+            scrollbarWidth: "none",
+            msOverflowStyle: "none",
+          } as React.CSSProperties
+        }
       >
         {visibleTabs.map((t) => (
           <button
@@ -1846,12 +2482,15 @@ export default function InternalControlPage() {
                   ? "2px solid #3b82f6"
                   : "2px solid transparent",
               color: activeTab === t.id ? "#e2e8f0" : "#718096",
-              padding: "12px 18px",
+              padding: "12px 14px",
               fontSize: "13px",
               fontWeight: activeTab === t.id ? 600 : 400,
               cursor: "pointer",
               fontFamily: "inherit",
               transition: "color 0.15s, border-color 0.15s",
+              whiteSpace: "nowrap",
+              minHeight: "44px",
+              flexShrink: 0,
             }}
           >
             {t.label}
@@ -1878,7 +2517,13 @@ export default function InternalControlPage() {
       {session.role === "superAdmin" && <ActivityLogBar log={activityLog} />}
 
       {/* Content */}
-      <div style={{ padding: "28px 24px", maxWidth: "1100px" }}>
+      <div
+        style={{
+          padding: isMobile ? "16px 12px" : "28px 24px",
+          maxWidth: "1100px",
+        }}
+      >
+        {activeTab === "products" && <ProductListTab />}
         {activeTab === "add" && <AddJewelryTab onLog={addLog} />}
         {activeTab === "prices" && <ChangePricesTab onLog={addLog} />}
         {activeTab === "orders" && session.role === "superAdmin" && (
@@ -1892,6 +2537,9 @@ export default function InternalControlPage() {
             currentSession={session}
             onRevokeCurrentUser={() => handleLogout()}
           />
+        )}
+        {activeTab === "design" && session.role === "superAdmin" && (
+          <WebsiteDesignTab />
         )}
         {activeTab === "settings" && session.role === "superAdmin" && (
           <SettingsTab

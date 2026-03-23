@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { getProductPrice, useMishi } from "../store/store";
 
 export default function HomePage() {
-  const { navigate, products, silverRate, addToCart } = useMishi();
+  const { navigate, products, silverRate, addToCart, siteImages } = useMishi();
   const featured = products.filter((p) => p.isActive).slice(0, 4);
 
   const heroRef = useRef<HTMLElement>(null);
@@ -43,13 +43,13 @@ export default function HomePage() {
       id: "silver",
       label: "Sterling Silver",
       sub: "925 hallmarked jewellery",
-      img: "/assets/generated/mishi-necklace.dim_400x500.jpg",
+      img: siteImages.necklaceImg,
     },
     {
       id: "ethnic",
       label: "Royal Ethnic Wear",
       sub: "Heritage weaves & bespoke sizing",
-      img: "/assets/generated/mishi-lehenga.dim_400x500.jpg",
+      img: siteImages.ethnicImg,
     },
     {
       id: "legacy",
@@ -85,8 +85,10 @@ export default function HomePage() {
         {/* Parallax background — Lion & Lioness Guardians on cliff under golden sunrise */}
         <img
           ref={bgImgRef}
-          src="/assets/generated/mishi-hero-lion-lioness-cliff-guardians.dim_1920x900.jpg"
+          src={siteImages.heroUrl}
           alt="Lion and Lioness Guardians on cliff under golden sunrise — MISHI"
+          loading="eager"
+          fetchPriority="high"
           style={{
             position: "absolute",
             left: "50%",
@@ -135,7 +137,7 @@ export default function HomePage() {
         >
           {/* MISHI logo — transparent PNG, golden wreath floats directly on hero background */}
           <img
-            src="/assets/generated/mishi-logo-pure-transparent.dim_800x800.png"
+            src={siteImages.logoUrl}
             alt="MISHI SM Wreath Logo"
             style={{
               height: 90,
@@ -282,6 +284,8 @@ export default function HomePage() {
                 <img
                   src={cat.img}
                   alt={cat.label}
+                  loading="lazy"
+                  decoding="async"
                   style={{
                     width: "100%",
                     height: "100%",
@@ -454,6 +458,8 @@ export default function HomePage() {
                     <img
                       src={p.imageUrl}
                       alt={p.name}
+                      loading="lazy"
+                      decoding="async"
                       style={{
                         width: "100%",
                         height: "100%",

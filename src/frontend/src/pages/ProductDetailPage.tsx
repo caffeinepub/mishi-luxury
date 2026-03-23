@@ -52,6 +52,8 @@ export default function ProductDetailPage({
             src={p.imageUrl}
             alt={p.name}
             className="w-full h-full object-cover"
+            loading="lazy"
+            decoding="async"
           />
         </div>
         <div className="flex flex-col justify-center">

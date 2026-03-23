@@ -49,6 +49,10 @@ export default function FounderGuides() {
   const currentYRef = useRef(0);
 
   useEffect(() => {
+    if (!visible) {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      return;
+    }
     const handleScroll = () => {
       const scrollY = window.scrollY;
       const viewH = window.innerHeight;
@@ -69,7 +73,7 @@ export default function FounderGuides() {
       window.removeEventListener("scroll", handleScroll);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, []);
+  }, [visible]);
 
   if (!visible) {
     return (
