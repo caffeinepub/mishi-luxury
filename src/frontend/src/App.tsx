@@ -1,3 +1,4 @@
+import FounderGuides from "./components/FounderGuides";
 import MishiButler from "./components/MishiButler";
 import Navbar from "./components/Navbar";
 import CartPage from "./pages/CartPage";
@@ -47,6 +48,7 @@ export default function App() {
         <PageRouter />
       </main>
       <MishiButler />
+      <FounderGuides />
 
       {/* Footer */}
       <footer
@@ -56,16 +58,14 @@ export default function App() {
           background: "rgba(4,6,12,0.7)",
         }}
       >
-        {/* Logo — screen blend removes white box on dark bg */}
         <div className="flex flex-col items-center gap-2 mb-4">
           <img
-            src="/assets/uploads/Snapchat-1589822426-1.jpg"
+            src="/assets/generated/mishi-logo-golden-clean-transparent.dim_400x200.png"
             alt="MISHI"
             className="h-12 w-auto"
             style={{
-              mixBlendMode: "screen",
-              filter:
-                "drop-shadow(0 0 10px rgba(212,175,55,0.4)) sepia(0.3) saturate(1.4) brightness(1.1)",
+              objectFit: "contain",
+              filter: "drop-shadow(0 0 10px rgba(212,175,55,0.5))",
             }}
           />
           <span

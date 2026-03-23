@@ -1,5 +1,4 @@
-import { useEffect, useRef, useState } from "react";
-import FounderModel3D from "../components/FounderModel3D";
+import { useEffect, useRef } from "react";
 import { getProductPrice, useMishi } from "../store/store";
 
 export default function HomePage() {
@@ -8,10 +7,7 @@ export default function HomePage() {
 
   const heroRef = useRef<HTMLElement>(null);
   const bgImgRef = useRef<HTMLImageElement>(null);
-  const atmoRef = useRef<HTMLDivElement>(null);
   const mouseOffsetRef = useRef({ x: 0, y: 0 });
-
-  const [bubbleVisible, setBubbleVisible] = useState(false);
 
   useEffect(() => {
     const hero = heroRef.current;
@@ -20,14 +16,9 @@ export default function HomePage() {
     const applyTransform = () => {
       const scrollY = window.scrollY;
       const { x: xBg, y: yBg } = mouseOffsetRef.current;
-      const scrollOffset = scrollY * 0.3;
+      const scrollOffset = scrollY * 0.25;
       if (bgImgRef.current) {
         bgImgRef.current.style.transform = `translate(calc(-50% + ${xBg}px), calc(-50% + ${yBg - scrollOffset}px))`;
-      }
-      if (atmoRef.current) {
-        const xAtmo = xBg * 0.47;
-        const yAtmo = yBg * 0.5 - scrollOffset * 0.5;
-        atmoRef.current.style.transform = `translate(calc(-50% + ${xAtmo}px), calc(-50% + ${yAtmo}px))`;
       }
     };
 
@@ -37,13 +28,11 @@ export default function HomePage() {
       const cy = rect.height / 2;
       const dx = (e.clientX - rect.left - cx) / cx;
       const dy = (e.clientY - rect.top - cy) / cy;
-      mouseOffsetRef.current = { x: dx * -15, y: dy * -10 };
+      mouseOffsetRef.current = { x: dx * -18, y: dy * -12 };
       applyTransform();
     };
 
-    const handleScroll = () => {
-      applyTransform();
-    };
+    const handleScroll = () => applyTransform();
 
     hero.addEventListener("mousemove", handleMouseMove);
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -53,142 +42,174 @@ export default function HomePage() {
     };
   }, []);
 
+  const categories = [
+    {
+      id: "silver",
+      label: "Sterling Silver",
+      sub: "925 hallmarked jewellery",
+      img: "/assets/generated/mishi-necklace.dim_400x500.jpg",
+    },
+    {
+      id: "ethnic",
+      label: "Royal Ethnic Wear",
+      sub: "Heritage weaves & bespoke sizing",
+      img: "/assets/generated/mishi-lehenga.dim_400x500.jpg",
+    },
+    {
+      id: "legacy",
+      label: "The MISHI Legacy",
+      sub: "Our story, our roots, our vision",
+      img: "/assets/generated/hero-lion-lioness-sunrise.dim_1920x900.jpg",
+      isLegacy: true,
+    },
+  ];
+
   return (
-    <div>
-      {/* HERO */}
+    <div style={{ background: "#0a0d16", minHeight: "100vh" }}>
+      {/* ═══════════ HERO ═══════════ */}
       <section
         ref={heroRef}
-        className="relative min-h-screen flex items-center justify-center overflow-hidden"
+        data-section="hero"
+        style={{
+          position: "relative",
+          height: "92vh",
+          minHeight: 520,
+          overflow: "hidden",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
       >
-        {/* Background layer — moves at full parallax speed */}
+        {/* Parallax background */}
         <img
           ref={bgImgRef}
-          src="/assets/generated/hero-lion-lioness-sunrise.dim_1920x900.jpg"
-          alt="MISHI Royal Pair — The Lion and Lioness at Sunrise"
+          src="/assets/generated/mishi-hero-royal-pair.dim_1920x900.jpg"
+          alt="Lion and Lioness - MISHI Royal Pair"
           style={{
             position: "absolute",
             left: "50%",
             top: "50%",
             transform: "translate(-50%, -50%)",
-            width: "112%",
-            height: "112%",
+            width: "115%",
+            height: "115%",
             objectFit: "cover",
-            filter: "brightness(0.42) saturate(1.25)",
-            transition: "transform 0.85s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+            objectPosition: "center 35%",
+            filter: "brightness(0.72) saturate(1.3)",
+            transition: "transform 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
             willChange: "transform",
           }}
         />
-        {/* Atmospheric depth layer — warm purple-gold glow */}
+        {/* Purple-gold atmospheric gradient */}
         <div
-          ref={atmoRef}
           style={{
             position: "absolute",
-            left: "50%",
-            top: "50%",
-            transform: "translate(-50%, -50%)",
-            width: "112%",
-            height: "112%",
+            inset: 0,
             background:
-              "radial-gradient(ellipse 70% 55% at 50% 62%, rgba(240,168,48,0.08) 0%, rgba(107,63,160,0.07) 55%, transparent 100%)",
-            transition: "transform 0.85s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
-            willChange: "transform",
+              "linear-gradient(to bottom, rgba(8,5,18,0.15) 0%, rgba(60,30,100,0.1) 40%, rgba(8,5,18,0.88) 100%)",
             pointerEvents: "none",
           }}
         />
-        {/* Vignette — bottom: warm deep purple */}
+        {/* Edge vignette */}
         <div
-          className="absolute inset-0"
           style={{
+            position: "absolute",
+            inset: 0,
             background:
-              "linear-gradient(to bottom, rgba(13,8,24,0.2) 0%, rgba(13,8,24,0.5) 55%, rgba(13,8,24,0.95) 100%)",
-            pointerEvents: "none",
-          }}
-        />
-        {/* Vignette — edges: warm dark purple */}
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              "radial-gradient(ellipse 90% 85% at 50% 50%, transparent 52%, rgba(8,4,18,0.85) 100%)",
-            pointerEvents: "none",
-          }}
-        />
-        {/* Sunrise horizon warmth glow at bottom */}
-        <div
-          className="absolute inset-x-0 bottom-0"
-          style={{
-            height: "35%",
-            background:
-              "linear-gradient(to top, rgba(200,128,10,0.06) 0%, rgba(107,63,160,0.04) 60%, transparent 100%)",
+              "radial-gradient(ellipse 88% 82% at 50% 48%, transparent 48%, rgba(6,3,14,0.8) 100%)",
             pointerEvents: "none",
           }}
         />
 
-        {/* Hero content */}
-        <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
-          <p
+        {/* Center brand text */}
+        <div
+          style={{
+            position: "relative",
+            zIndex: 10,
+            textAlign: "center",
+            padding: "0 1.5rem",
+          }}
+        >
+          {/* Logo watermark */}
+          <img
+            src="/assets/generated/mishi-logo-golden-clean-transparent.dim_400x200.png"
+            alt="MISHI Logo"
             style={{
-              fontSize: "0.68rem",
-              letterSpacing: "0.45em",
-              color: "#c8a050",
-              textTransform: "uppercase",
-              marginBottom: "1.2rem",
-              fontFamily: "Inter, sans-serif",
-              fontWeight: 400,
+              height: 72,
+              width: "auto",
+              objectFit: "contain",
+              filter: "drop-shadow(0 0 16px rgba(212,175,55,0.5))",
+              marginBottom: "0.75rem",
             }}
-          >
-            Est. 2025 · Mission 2028
-          </p>
+          />
           <h1
-            className="mishi-brand-title"
             style={{
-              fontSize: "clamp(5rem, 14vw, 12rem)",
+              fontFamily: "'Great Vibes', cursive",
+              fontSize: "clamp(5rem, 15vw, 11rem)",
               lineHeight: 1.0,
-              marginBottom: "0.6rem",
+              background:
+                "linear-gradient(135deg, #c9a84c 0%, #f5d98b 25%, #d4af37 45%, #fceab0 60%, #b8860b 80%, #e8c84a 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+              filter: "drop-shadow(0 0 20px rgba(212,175,55,0.45))",
+              margin: "0 0 0.5rem",
             }}
           >
             Mishi
           </h1>
           <p
-            className="tagline-lavender"
             style={{
               fontFamily: "Inter, sans-serif",
               fontWeight: 300,
-              fontSize: "clamp(0.75rem, 2vw, 1.1rem)",
+              fontSize: "clamp(0.8rem, 2vw, 1.05rem)",
+              letterSpacing: "0.32em",
               textTransform: "uppercase",
-              fontStyle: "normal",
+              color: "#c4b5fd",
               marginBottom: "2rem",
             }}
           >
             Where Love Unites Empires
           </p>
-          <div className="royal-divider w-56 mx-auto" />
+          <div
+            style={{
+              width: 160,
+              height: 1,
+              background:
+                "linear-gradient(90deg, transparent, #d4af37, transparent)",
+              margin: "0 auto 1.5rem",
+            }}
+          />
           <p
             style={{
-              color: "#9abbc8",
+              color: "rgba(192,232,239,0.75)",
               fontSize: "0.82rem",
-              letterSpacing: "0.04em",
-              lineHeight: 1.7,
-              maxWidth: "36rem",
-              margin: "0 auto 2.5rem",
+              letterSpacing: "0.06em",
               fontFamily: "Inter, sans-serif",
             }}
           >
-            Sterling Silver Ornaments &amp; Royal Ethnic Wear — crafted for
-            those who wear their legacy
+            Sterling Silver Ornaments &amp; Royal Ethnic Wear
           </p>
         </div>
 
-        {/* Scroll indicator */}
+        {/* Scroll cue */}
         <div
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
-          style={{ opacity: 0.45 }}
+          style={{
+            position: "absolute",
+            bottom: 28,
+            left: "50%",
+            transform: "translateX(-50%)",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 6,
+            opacity: 0.45,
+          }}
         >
           <span
             style={{
-              fontSize: "0.65rem",
-              color: "#c8a050",
-              letterSpacing: "0.3em",
+              fontSize: "0.6rem",
+              letterSpacing: "0.35em",
+              color: "#d4af37",
               textTransform: "uppercase",
               fontFamily: "Inter, sans-serif",
             }}
@@ -196,31 +217,33 @@ export default function HomePage() {
             Scroll
           </span>
           <div
-            className="w-px h-12"
             style={{
-              background:
-                "linear-gradient(to bottom, #d4af37, rgba(107,63,160,0.4), transparent)",
+              width: 1,
+              height: 40,
+              background: "linear-gradient(to bottom, #d4af37, transparent)",
             }}
           />
         </div>
       </section>
 
-      {/* Categories */}
+      {/* ═══════════ 3 CATEGORY CARDS ═══════════ */}
       <section
-        className="py-20 px-6 max-w-6xl mx-auto"
+        data-section="jewelry"
         style={{
-          background:
-            "linear-gradient(180deg, transparent 0%, rgba(61,31,110,0.04) 50%, transparent 100%)",
+          padding: "4rem 1.5rem 5rem",
+          maxWidth: 1200,
+          margin: "0 auto",
         }}
       >
         <p
           style={{
             textAlign: "center",
-            fontSize: "0.7rem",
-            letterSpacing: "0.4em",
-            color: "#c8a050",
+            fontSize: "0.68rem",
+            letterSpacing: "0.42em",
+            color: "#d4af37",
             textTransform: "uppercase",
-            marginBottom: "0.75rem",
+            marginBottom: "0.6rem",
+            fontFamily: "Inter, sans-serif",
           }}
         >
           Our Collections
@@ -228,639 +251,329 @@ export default function HomePage() {
         <h2
           style={{
             fontFamily: "Playfair Display, serif",
-            fontSize: "clamp(2rem, 5vw, 3.5rem)",
+            fontSize: "clamp(1.8rem, 4vw, 3rem)",
             color: "#c0e8ef",
             textAlign: "center",
             marginBottom: "3rem",
+            fontWeight: 400,
           }}
         >
           The Royal Treasury
         </h2>
-        <div className="grid md:grid-cols-2 gap-8">
-          {[
-            {
-              cat: "silver",
-              label: "Sterling Silver Ornaments",
-              sub: "925 hallmarked · artisan crafted",
-              img: "https://picsum.photos/seed/mishicat1/800/500",
-              tag: "Pure Silver",
-            },
-            {
-              cat: "ethnic",
-              label: "Royal Ethnic Wear",
-              sub: "Heritage weaves · bespoke sizing",
-              img: "https://picsum.photos/seed/mishicat2/800/500",
-              tag: "Ethnic Heritage",
-            },
-          ].map((c) => (
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+            gap: "1.5rem",
+          }}
+        >
+          {categories.map((cat) => (
             <button
               type="button"
-              key={c.cat}
-              data-ocid={`category.${c.cat}.button`}
-              onClick={() => navigate("shop")}
-              className="glass-card relative overflow-hidden group text-left"
-              style={{ aspectRatio: "16/9" }}
+              key={cat.id}
+              data-ocid={`category.${cat.id}.button`}
+              onClick={() =>
+                cat.isLegacy ? navigate("legacy") : navigate("shop")
+              }
+              style={{
+                position: "relative",
+                overflow: "hidden",
+                borderRadius: 20,
+                aspectRatio: "4/5",
+                border: "1px solid rgba(212,175,55,0.22)",
+                cursor: "pointer",
+                background: "#111520",
+                textAlign: "left",
+                padding: 0,
+                transition: "transform 0.3s ease, box-shadow 0.3s ease",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.transform =
+                  "translateY(-6px) scale(1.01)";
+                (e.currentTarget as HTMLButtonElement).style.boxShadow =
+                  "0 16px 48px rgba(212,175,55,0.2), 0 0 0 1px rgba(212,175,55,0.3)";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.transform =
+                  "translateY(0) scale(1)";
+                (e.currentTarget as HTMLButtonElement).style.boxShadow = "none";
+              }}
             >
               <img
-                src={c.img}
-                alt={c.label}
-                className="absolute inset-0 w-full h-full object-cover"
+                src={cat.img}
+                alt={cat.label}
                 style={{
-                  opacity: 0.5,
-                  transition:
-                    "opacity 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+                  position: "absolute",
+                  inset: 0,
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  opacity: 0.55,
+                  transition: "opacity 0.4s ease, transform 0.6s ease",
                 }}
               />
               <div
-                className="absolute inset-0"
                 style={{
+                  position: "absolute",
+                  inset: 0,
                   background:
-                    "linear-gradient(to top, rgba(13,8,24,0.95) 0%, rgba(13,8,24,0.25) 100%)",
+                    "linear-gradient(to top, rgba(8,5,18,0.96) 0%, rgba(8,5,18,0.3) 55%, transparent 100%)",
                 }}
               />
-              <div className="absolute bottom-0 left-0 p-8">
+              <div
+                style={{
+                  position: "absolute",
+                  bottom: 0,
+                  left: 0,
+                  padding: "1.8rem 1.5rem",
+                }}
+              >
+                <h3
+                  style={{
+                    fontFamily: "Playfair Display, serif",
+                    fontSize: "1.45rem",
+                    color: "#c0e8ef",
+                    fontWeight: 500,
+                    marginBottom: "0.4rem",
+                    letterSpacing: "0.02em",
+                  }}
+                >
+                  {cat.label}
+                </h3>
+                <p
+                  style={{
+                    fontSize: "0.8rem",
+                    color: "#7a9aaa",
+                    fontFamily: "Inter, sans-serif",
+                    marginBottom: "1rem",
+                  }}
+                >
+                  {cat.sub}
+                </p>
                 <span
                   style={{
                     fontSize: "0.7rem",
                     letterSpacing: "0.25em",
-                    color: "#c8a050",
-                    textTransform: "uppercase",
-                  }}
-                >
-                  {c.tag}
-                </span>
-                <h3
-                  style={{
-                    fontFamily: "Playfair Display, serif",
-                    fontSize: "1.8rem",
-                    color: "#c0e8ef",
-                    marginTop: "0.25rem",
-                    marginBottom: "0.5rem",
-                  }}
-                >
-                  {c.label}
-                </h3>
-                <p style={{ color: "#7a9aaa", fontSize: "0.875rem" }}>
-                  {c.sub}
-                </p>
-                <div
-                  style={{
-                    marginTop: "1rem",
                     color: "#d4af37",
-                    fontSize: "0.8rem",
-                    letterSpacing: "0.2em",
                     textTransform: "uppercase",
+                    fontFamily: "Inter, sans-serif",
                     display: "flex",
                     alignItems: "center",
-                    gap: "0.5rem",
+                    gap: 6,
                   }}
                 >
-                  Discover <span>→</span>
-                </div>
+                  Explore <span>→</span>
+                </span>
               </div>
             </button>
           ))}
         </div>
       </section>
 
-      {/* Silver Rate Banner */}
+      {/* ═══════════ SILVER RATE BAND ═══════════ */}
       <div
         style={{
-          padding: "1rem 1.5rem",
+          padding: "0.9rem 1.5rem",
           textAlign: "center",
           background:
-            "linear-gradient(90deg, rgba(61,31,110,0.04), rgba(212,175,55,0.08), rgba(61,31,110,0.04))",
-          borderTop: "1px solid rgba(212,175,55,0.18)",
-          borderBottom: "1px solid rgba(212,175,55,0.18)",
+            "linear-gradient(90deg, rgba(10,4,24,0), rgba(212,175,55,0.07), rgba(10,4,24,0))",
+          borderTop: "1px solid rgba(212,175,55,0.15)",
+          borderBottom: "1px solid rgba(212,175,55,0.15)",
         }}
       >
-        <p style={{ fontSize: "0.875rem", letterSpacing: "0.04em" }}>
+        <p
+          style={{
+            fontSize: "0.82rem",
+            fontFamily: "Inter, sans-serif",
+            color: "#7a8a90",
+          }}
+        >
           <span
             style={{
-              color: "#7a8a90",
-              fontSize: "0.7rem",
-              letterSpacing: "0.2em",
+              fontSize: "0.68rem",
+              letterSpacing: "0.22em",
               textTransform: "uppercase",
             }}
           >
-            {"Today's Live Silver Rate · "}
+            Live Silver Rate{" "}
           </span>
           <span style={{ color: "#d4af37", fontWeight: 600 }}>
             ₹{silverRate}/gram
           </span>
-          <span
-            style={{
-              color: "#4a5a65",
-              fontSize: "0.7rem",
-              marginLeft: "0.75rem",
-            }}
-          >
-            (Reflected in all Sterling Silver prices)
+          <span style={{ fontSize: "0.68rem", marginLeft: 10 }}>
+            · Reflected in all silver prices
           </span>
         </p>
       </div>
 
-      {/* Featured Products */}
-      <section className="py-20 px-6 max-w-7xl mx-auto">
-        <p
-          style={{
-            textAlign: "center",
-            fontSize: "0.7rem",
-            letterSpacing: "0.4em",
-            color: "#c8a050",
-            textTransform: "uppercase",
-            marginBottom: "0.75rem",
-          }}
+      {/* ═══════════ FEATURED PRODUCTS ═══════════ */}
+      {featured.length > 0 && (
+        <section
+          data-section="products"
+          style={{ padding: "5rem 1.5rem", maxWidth: 1280, margin: "0 auto" }}
         >
-          Handpicked
-        </p>
-        <h2
-          style={{
-            fontFamily: "Playfair Display, serif",
-            fontSize: "clamp(2rem, 5vw, 3rem)",
-            color: "#c0e8ef",
-            textAlign: "center",
-            marginBottom: "3rem",
-          }}
-        >
-          Royal Selections
-        </h2>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {featured.map((p, idx) => {
-            const price = getProductPrice(p, silverRate);
-            return (
-              <button
-                type="button"
-                key={p.id}
-                data-ocid={`products.item.${idx + 1}`}
-                className="glass-card overflow-hidden group cursor-pointer text-left w-full"
-                onClick={() => navigate(`product-${p.id}`)}
-              >
-                <div
-                  className="relative overflow-hidden"
-                  style={{ aspectRatio: "4/5" }}
+          <p
+            style={{
+              textAlign: "center",
+              fontSize: "0.68rem",
+              letterSpacing: "0.42em",
+              color: "#d4af37",
+              textTransform: "uppercase",
+              marginBottom: "0.6rem",
+              fontFamily: "Inter, sans-serif",
+            }}
+          >
+            Handpicked
+          </p>
+          <h2
+            style={{
+              fontFamily: "Playfair Display, serif",
+              fontSize: "clamp(1.8rem, 4vw, 2.8rem)",
+              color: "#c0e8ef",
+              textAlign: "center",
+              marginBottom: "3rem",
+              fontWeight: 400,
+            }}
+          >
+            Royal Selections
+          </h2>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
+              gap: "1.5rem",
+            }}
+          >
+            {featured.map((p, idx) => {
+              const price = getProductPrice(p, silverRate);
+              return (
+                <button
+                  type="button"
+                  key={p.id}
+                  data-ocid={`products.item.${idx + 1}`}
+                  onClick={() => navigate(`product-${p.id}`)}
+                  style={{
+                    borderRadius: 16,
+                    overflow: "hidden",
+                    border: "1px solid rgba(14,116,144,0.2)",
+                    background: "#0f1420",
+                    cursor: "pointer",
+                    textAlign: "left",
+                    padding: 0,
+                    transition: "transform 0.3s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLButtonElement).style.transform =
+                      "translateY(-4px)";
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLButtonElement).style.transform =
+                      "translateY(0)";
+                  }}
                 >
-                  <img
-                    src={p.imageUrl}
-                    alt={p.name}
-                    className="w-full h-full object-cover group-hover:scale-105"
-                    style={{
-                      transition:
-                        "transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
-                    }}
-                  />
-                  <div
-                    className="absolute bottom-0 left-0 right-0 p-3"
-                    style={{
-                      background:
-                        "linear-gradient(to top, rgba(13,8,24,0.95), transparent)",
-                    }}
-                  >
+                  <div style={{ aspectRatio: "4/5", overflow: "hidden" }}>
+                    <img
+                      src={p.imageUrl}
+                      alt={p.name}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        transition: "transform 0.5s ease",
+                      }}
+                    />
+                  </div>
+                  <div style={{ padding: "1rem 1.1rem 1.2rem" }}>
                     <span
                       style={{
-                        fontSize: "0.65rem",
+                        fontSize: "0.64rem",
                         letterSpacing: "0.2em",
                         color: "#d4af37",
                         textTransform: "uppercase",
+                        fontFamily: "Inter, sans-serif",
                       }}
                     >
                       {p.category === "silver"
                         ? "Sterling Silver"
                         : "Ethnic Wear"}
                     </span>
-                  </div>
-                </div>
-                <div className="p-4">
-                  <h3
-                    style={{
-                      fontFamily: "Cormorant Garamond, serif",
-                      fontSize: "1.1rem",
-                      color: "#d0eaf3",
-                      marginBottom: "0.25rem",
-                      fontWeight: 500,
-                    }}
-                  >
-                    {p.name}
-                  </h3>
-                  {p.category === "silver" && p.silverWeight && (
-                    <p
+                    <h3
                       style={{
-                        fontSize: "0.75rem",
-                        color: "#4a6a78",
-                        marginBottom: "0.25rem",
+                        fontFamily: "Playfair Display, serif",
+                        fontSize: "1rem",
+                        color: "#d0eaf3",
+                        marginTop: "0.3rem",
+                        marginBottom: "0.5rem",
+                        fontWeight: 500,
                       }}
                     >
-                      {p.silverWeight}g silver · Rate ₹{silverRate}/g
+                      {p.name}
+                    </h3>
+                    <p
+                      style={{
+                        color: "#d4af37",
+                        fontWeight: 600,
+                        marginBottom: "0.75rem",
+                        fontSize: "0.95rem",
+                      }}
+                    >
+                      ₹{price.toLocaleString("en-IN")}
                     </p>
-                  )}
-                  <p
-                    style={{
-                      color: "#d4af37",
-                      fontWeight: 600,
-                      marginBottom: "0.75rem",
-                    }}
-                  >
-                    ₹{price.toLocaleString("en-IN")}
-                  </p>
-                  <button
-                    type="button"
-                    data-ocid={`products.cart.button.${idx + 1}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      addToCart(p.id, 1);
-                    }}
-                    className="w-full btn-outline-gold text-xs py-2 tracking-wider uppercase"
-                  >
-                    Add to Cart
-                  </button>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-        <div style={{ textAlign: "center", marginTop: "2.5rem" }}>
-          <button
-            type="button"
-            data-ocid="home.shop_all.primary_button"
-            onClick={() => navigate("shop")}
-            className="btn-gold px-10 py-3 tracking-widest uppercase text-sm"
-          >
-            View Full Collection
-          </button>
-        </div>
-      </section>
-
-      {/* Legacy Teaser */}
-      <section
-        className="py-20 px-6"
-        style={{
-          background:
-            "linear-gradient(135deg, rgba(61,31,110,0.12), rgba(13,8,24,0), rgba(212,175,55,0.06))",
-        }}
-      >
-        <div className="max-w-3xl mx-auto text-center">
-          <p
-            style={{
-              fontSize: "0.7rem",
-              letterSpacing: "0.4em",
-              color: "#c8a050",
-              textTransform: "uppercase",
-              marginBottom: "1rem",
-            }}
-          >
-            A Story of Vision
-          </p>
-          <h2
-            style={{
-              fontFamily: "Playfair Display, serif",
-              fontSize: "clamp(2rem, 5vw, 3.5rem)",
-              color: "#c0e8ef",
-              marginBottom: "1.5rem",
-            }}
-          >
-            The MISHI Legacy
-          </h2>
-          <div className="royal-divider" />
-          <p
-            style={{
-              fontFamily: "Cormorant Garamond, serif",
-              fontSize: "1.3rem",
-              lineHeight: 1.8,
-              fontStyle: "italic",
-              color: "#a8c8d4",
-              marginBottom: "2rem",
-            }}
-          >
-            "Born from an unwavering dream, MISHI is more than a brand — it is a
-            dynasty in the making. Founded on the twin pillars of Purity and
-            Heritage, we craft each piece as if it were destined for a palace."
-          </p>
-          <button
-            type="button"
-            data-ocid="home.legacy.primary_button"
-            onClick={() => navigate("legacy")}
-            className="btn-gold px-10 py-3 tracking-widest uppercase text-sm"
-          >
-            Read Our Story
-          </button>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════════ */}
-      {/* FOUNDERS SECTION — Interactive 3D Royal Guides */}
-      {/* ═══════════════════════════════════════════════ */}
-      <section
-        style={{
-          background:
-            "linear-gradient(135deg, rgba(13,8,24,1) 0%, rgba(20,8,35,0.98) 100%)",
-          borderTop: "1px solid rgba(212,175,55,0.2)",
-          padding: "6rem 1.5rem",
-        }}
-      >
-        <div className="max-w-6xl mx-auto">
-          {/* Section label */}
-          <p
-            style={{
-              textAlign: "center",
-              fontSize: "0.7rem",
-              letterSpacing: "0.4em",
-              color: "#c8a050",
-              textTransform: "uppercase",
-              marginBottom: "3.5rem",
-            }}
-          >
-            The Visionaries
-          </p>
-
-          <div
-            className="flex flex-col md:flex-row items-center justify-center"
-            style={{ gap: "4rem" }}
-          >
-            {/* ── LEFT: 3D Interactive Founders + speech bubble ── */}
-            <div
-              className="relative flex flex-col items-center"
-              data-ocid="founders.panel"
-            >
-              {/* Speech bubble */}
-              {bubbleVisible && (
-                <div
-                  data-ocid="founders.popover"
-                  style={{
-                    position: "absolute",
-                    bottom: "calc(100% + 8px)",
-                    left: "50%",
-                    transform: "translateX(-50%)",
-                    width: "clamp(240px, 60vw, 320px)",
-                    background: "rgba(13,5,28,0.94)",
-                    backdropFilter: "blur(20px)",
-                    WebkitBackdropFilter: "blur(20px)",
-                    border: "1px solid rgba(212,175,55,0.45)",
-                    borderRadius: "16px",
-                    padding: "1.4rem 1.4rem 1.2rem",
-                    boxShadow:
-                      "0 0 32px rgba(212,175,55,0.15), 0 0 64px rgba(107,63,160,0.12), 0 8px 32px rgba(0,0,0,0.6)",
-                    zIndex: 20,
-                    animation: "fadeInUp 0.28s ease",
-                  }}
-                >
-                  {/* Pointer triangle */}
-                  <div
-                    style={{
-                      position: "absolute",
-                      bottom: -9,
-                      left: "50%",
-                      transform: "translateX(-50%)",
-                      width: 0,
-                      height: 0,
-                      borderLeft: "9px solid transparent",
-                      borderRight: "9px solid transparent",
-                      borderTop: "9px solid rgba(212,175,55,0.45)",
-                    }}
-                  />
-                  <div
-                    style={{
-                      position: "absolute",
-                      bottom: -7,
-                      left: "50%",
-                      transform: "translateX(-50%)",
-                      width: 0,
-                      height: 0,
-                      borderLeft: "8px solid transparent",
-                      borderRight: "8px solid transparent",
-                      borderTop: "8px solid rgba(13,5,28,0.94)",
-                    }}
-                  />
-
-                  <p
-                    style={{
-                      fontFamily: "Cormorant Garamond, serif",
-                      fontSize: "1rem",
-                      fontStyle: "italic",
-                      color: "#d4af37",
-                      lineHeight: 1.65,
-                      marginBottom: "1rem",
-                      textAlign: "center",
-                    }}
-                  >
-                    Welcome to MISHI! Let us guide you through our Royal
-                    Vault...
-                  </p>
-
-                  <div
-                    style={{
-                      display: "flex",
-                      gap: "0.75rem",
-                      justifyContent: "center",
-                    }}
-                  >
                     <button
                       type="button"
-                      data-ocid="founders.collections.button"
-                      onClick={() => {
-                        setBubbleVisible(false);
-                        navigate("shop");
+                      data-ocid={`products.cart.button.${idx + 1}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        addToCart(p.id, 1);
                       }}
                       style={{
-                        fontFamily: "Inter, sans-serif",
-                        fontSize: "0.72rem",
-                        letterSpacing: "0.18em",
+                        width: "100%",
+                        padding: "0.5rem",
+                        fontSize: "0.7rem",
+                        letterSpacing: "0.2em",
                         textTransform: "uppercase",
                         color: "#d4af37",
                         background: "transparent",
-                        border: "1px solid rgba(212,175,55,0.5)",
-                        borderRadius: "6px",
-                        padding: "0.45rem 1rem",
+                        border: "1px solid rgba(212,175,55,0.4)",
+                        borderRadius: 8,
                         cursor: "pointer",
-                        transition: "all 0.3s ease",
-                      }}
-                    >
-                      Collections
-                    </button>
-                    <button
-                      type="button"
-                      data-ocid="founders.legacy.button"
-                      onClick={() => {
-                        setBubbleVisible(false);
-                        navigate("legacy");
-                      }}
-                      style={{
                         fontFamily: "Inter, sans-serif",
-                        fontSize: "0.72rem",
-                        letterSpacing: "0.18em",
-                        textTransform: "uppercase",
-                        color: "#c4b5fd",
-                        background: "transparent",
-                        border: "1px solid rgba(196,181,253,0.45)",
-                        borderRadius: "6px",
-                        padding: "0.45rem 1rem",
-                        cursor: "pointer",
-                        transition: "all 0.3s ease",
+                        transition: "all 0.25s ease",
                       }}
                     >
-                      Our Legacy
+                      Add to Cart
                     </button>
                   </div>
-                </div>
-              )}
-
-              {/* 3D Interactive Model */}
-              <FounderModel3D onInteract={() => setBubbleVisible((v) => !v)} />
-
-              {/* Label below 3D model */}
-              <p
-                style={{
-                  marginTop: "0.5rem",
-                  fontSize: "0.65rem",
-                  letterSpacing: "0.35em",
-                  color: "#c8a050",
-                  textTransform: "uppercase",
-                  textAlign: "center",
-                }}
-              >
-                Your Royal Guides
-              </p>
-            </div>
-
-            {/* ── RIGHT: Founder Names ── */}
-            <div
-              className="flex flex-col items-center md:items-start"
-              style={{ maxWidth: 400 }}
-              data-ocid="founders.card"
-            >
-              {/* Our Founders title */}
-              <h2
-                style={{
-                  fontFamily: "Playfair Display, serif",
-                  fontSize: "2.2rem",
-                  fontWeight: 600,
-                  color: "#d4af37",
-                  marginBottom: "1rem",
-                  textAlign: "center",
-                  letterSpacing: "0.04em",
-                }}
-              >
-                Our Founders
-              </h2>
-
-              {/* Gold divider */}
-              <div
-                style={{
-                  width: "100%",
-                  maxWidth: 260,
-                  height: 1,
-                  background:
-                    "linear-gradient(90deg, transparent, #d4af37, #f0a830, #d4af37, transparent)",
-                  marginBottom: "2rem",
-                  alignSelf: "center",
-                }}
-              />
-
-              {/* Founder names with metallic gold gradient */}
-              <div
-                style={{
-                  filter: "drop-shadow(0 0 12px rgba(212,175,55,0.4))",
-                  textAlign: "center",
-                  alignSelf: "center",
-                }}
-              >
-                <p
-                  style={{
-                    fontFamily: "Great Vibes, cursive",
-                    fontSize: "clamp(2.5rem, 5vw, 4rem)",
-                    lineHeight: 1.2,
-                    background:
-                      "linear-gradient(135deg, #c9a84c 0%, #f5d98b 25%, #d4af37 45%, #fceab0 60%, #b8860b 80%, #e8c84a 100%)",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                    backgroundClip: "text",
-                  }}
-                >
-                  Mohit Gujrati
-                </p>
-
-                <p
-                  style={{
-                    fontFamily: "Playfair Display, serif",
-                    fontStyle: "italic",
-                    fontSize: "1.2rem",
-                    color: "#d4af37",
-                    lineHeight: 1.8,
-                    display: "block",
-                  }}
-                >
-                  &amp;
-                </p>
-
-                <p
-                  style={{
-                    fontFamily: "Great Vibes, cursive",
-                    fontSize: "clamp(2.5rem, 5vw, 4rem)",
-                    lineHeight: 1.2,
-                    background:
-                      "linear-gradient(135deg, #c9a84c 0%, #f5d98b 25%, #d4af37 45%, #fceab0 60%, #b8860b 80%, #e8c84a 100%)",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                    backgroundClip: "text",
-                  }}
-                >
-                  Shivani Rana
-                </p>
-              </div>
-
-              {/* Attire description */}
-              <div
-                style={{
-                  marginTop: "1.5rem",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "0.6rem",
-                  alignSelf: "center",
-                  textAlign: "center",
-                }}
-              >
-                <p
-                  style={{
-                    fontFamily: "Cormorant Garamond, serif",
-                    fontStyle: "italic",
-                    fontSize: "0.9rem",
-                    color: "#9abbc8",
-                    letterSpacing: "0.03em",
-                  }}
-                >
-                  🤴 Navy-Teal Velvet Kurta · Gold Zari · Ivory Shawl
-                </p>
-                <p
-                  style={{
-                    fontFamily: "Cormorant Garamond, serif",
-                    fontStyle: "italic",
-                    fontSize: "0.9rem",
-                    color: "#c4b5fd",
-                    letterSpacing: "0.03em",
-                  }}
-                >
-                  👸 Teal-Gold Saree · Maang Tikka · Jhumkas · Layered Necklace
-                </p>
-              </div>
-
-              {/* Tagline */}
-              <p
-                style={{
-                  fontFamily: "Cormorant Garamond, serif",
-                  fontStyle: "italic",
-                  fontSize: "1rem",
-                  color: "#c4b5fd",
-                  marginTop: "1.5rem",
-                  textAlign: "center",
-                  letterSpacing: "0.04em",
-                  alignSelf: "center",
-                }}
-              >
-                The Visionaries Behind the Royal Vault
-              </p>
-            </div>
+                </button>
+              );
+            })}
           </div>
-        </div>
-      </section>
+          <div style={{ textAlign: "center", marginTop: "2.5rem" }}>
+            <button
+              type="button"
+              data-ocid="home.shop_all.primary_button"
+              onClick={() => navigate("shop")}
+              style={{
+                padding: "0.85rem 2.5rem",
+                fontSize: "0.78rem",
+                letterSpacing: "0.28em",
+                textTransform: "uppercase",
+                color: "#0a0d16",
+                background:
+                  "linear-gradient(135deg, #c9a84c, #f5d98b, #d4af37)",
+                border: "none",
+                borderRadius: 8,
+                cursor: "pointer",
+                fontFamily: "Inter, sans-serif",
+                fontWeight: 600,
+              }}
+            >
+              View Full Collection
+            </button>
+          </div>
+        </section>
+      )}
     </div>
   );
 }

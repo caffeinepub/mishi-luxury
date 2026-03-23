@@ -52,7 +52,7 @@ export default function Navbar() {
       }}
     >
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-        {/* Logo — mixBlendMode:screen removes white box on dark bg */}
+        {/* Logo */}
         <button
           type="button"
           data-ocid="nav.home.link"
@@ -61,15 +61,12 @@ export default function Navbar() {
           style={{ background: "none", border: "none", cursor: "pointer" }}
         >
           <img
-            src="/assets/uploads/Snapchat-1589822426-1.jpg"
+            src="/assets/generated/mishi-logo-golden-clean-transparent.dim_400x200.png"
             alt="MISHI"
             className="h-9 w-auto"
             style={{
-              mixBlendMode: "screen",
               objectFit: "contain",
-              background: "transparent",
-              filter:
-                "drop-shadow(0 0 6px rgba(212,175,55,0.45)) sepia(0.3) saturate(1.4) brightness(1.1)",
+              filter: "drop-shadow(0 0 10px rgba(212,175,55,0.5))",
             }}
           />
           <span className="mishi-brand-title" style={{ fontSize: "28px" }}>

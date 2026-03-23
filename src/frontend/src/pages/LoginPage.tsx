@@ -38,10 +38,13 @@ export default function LoginPage() {
       <div className="glass-card p-10 w-full max-w-md">
         <div className="text-center mb-8">
           <img
-            src="/assets/uploads/Snapchat-1589822426-1.jpg"
+            src="/assets/generated/mishi-logo-golden-clean-transparent.dim_400x200.png"
             alt="MISHI"
             className="h-16 w-auto mx-auto mb-4"
-            style={{ filter: "drop-shadow(0 0 15px rgba(6,182,212,0.5))" }}
+            style={{
+              objectFit: "contain",
+              filter: "drop-shadow(0 0 10px rgba(212,175,55,0.5))",
+            }}
           />
           <h1
             data-ocid="login.page"
