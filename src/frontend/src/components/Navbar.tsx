@@ -1,6 +1,24 @@
 import { Heart, Menu, ShoppingBag, X } from "lucide-react";
 import { useState } from "react";
-import { useMishi } from "../store/store";
+import { type CurrencyCode, type LanguageCode, useMishi } from "../store/store";
+
+const LOGO_PATH = "/assets/images/logo.png";
+
+const CURRENCY_OPTIONS: { code: CurrencyCode; label: string }[] = [
+  { code: "INR", label: "₹ INR" },
+  { code: "USD", label: "$ USD" },
+  { code: "AED", label: "\u062f.\u0625 AED" },
+  { code: "GBP", label: "£ GBP" },
+  { code: "EUR", label: "€ EUR" },
+];
+
+const LANGUAGE_OPTIONS: { code: LanguageCode; flag: string; label: string }[] =
+  [
+    { code: "English", flag: "🇮🇳", label: "English" },
+    { code: "Hindi", flag: "🇮🇳", label: "हिंदी" },
+    { code: "Arabic", flag: "🇦🇪", label: "العربية" },
+    { code: "French", flag: "🇫🇷", label: "Français" },
+  ];
 
 export default function Navbar() {
   const {
@@ -11,7 +29,10 @@ export default function Navbar() {
     isLoggedIn,
     adminLevel,
     logout,
-    siteImages,
+    currency,
+    setCurrency,
+    language,
+    setLanguage,
   } = useMishi();
   const [open, setOpen] = useState(false);
   const cartCount = cart.reduce((s, i) => s + i.quantity, 0);
@@ -41,6 +62,20 @@ export default function Navbar() {
       {label}
     </button>
   );
+
+  const selectStyle: React.CSSProperties = {
+    fontFamily: "Cormorant Garamond, serif",
+    fontSize: "10px",
+    color: "#2ab8c8",
+    background: "transparent",
+    border: "1px solid rgba(42,184,200,0.35)",
+    borderRadius: "3px",
+    padding: "1px 4px",
+    cursor: "pointer",
+    outline: "none",
+    letterSpacing: "0.05em",
+    maxWidth: 90,
+  };
 
   return (
     <nav
@@ -79,22 +114,25 @@ export default function Navbar() {
             lineHeight: 1,
           }}
         >
-          {/* Pure transparent golden logo — no blend mode tricks needed */}
           <img
-            src={siteImages.logoUrl}
+            src={LOGO_PATH}
             alt="MISHI Logo"
+            loading="eager"
+            fetchPriority="high"
+            width={24}
+            height={24}
             style={{
               width: 24,
               height: 24,
               objectFit: "contain",
               display: "block",
               background: "none",
+
               filter:
                 "drop-shadow(0 0 3px rgba(212,175,55,0.85)) drop-shadow(0 0 1px rgba(180,120,0,0.7))",
             }}
           />
 
-          {/* Brand name */}
           <span
             className="mishi-brand-title"
             style={{
@@ -107,7 +145,6 @@ export default function Navbar() {
             Mishi
           </span>
 
-          {/* Divider */}
           <span
             style={{
               width: 1,
@@ -118,7 +155,6 @@ export default function Navbar() {
             }}
           />
 
-          {/* Tagline */}
           <span
             style={{
               fontFamily: "Cormorant Garamond, serif",
@@ -144,8 +180,37 @@ export default function Navbar() {
           {adminLevel === "secondary" && link("admin-secondary", "Dashboard")}
         </div>
 
-        {/* Icons */}
+        {/* Icons + Currency/Language */}
         <div className="flex items-center gap-2">
+          {/* Currency */}
+          <select
+            value={currency}
+            onChange={(e) => setCurrency(e.target.value as CurrencyCode)}
+            style={selectStyle}
+            aria-label="Currency"
+            data-ocid="nav.currency.select"
+          >
+            {CURRENCY_OPTIONS.map((c) => (
+              <option key={c.code} value={c.code}>
+                {c.label}
+              </option>
+            ))}
+          </select>
+          {/* Language */}
+          <select
+            value={language}
+            onChange={(e) => setLanguage(e.target.value as LanguageCode)}
+            style={selectStyle}
+            aria-label="Language"
+            data-ocid="nav.language.select"
+          >
+            {LANGUAGE_OPTIONS.map((l) => (
+              <option key={l.code} value={l.code}>
+                {l.flag} {l.label}
+              </option>
+            ))}
+          </select>
+
           <button
             type="button"
             data-ocid="nav.wishlist.link"
@@ -161,16 +226,23 @@ export default function Navbar() {
             <Heart
               size={15}
               fill={wishlist.length > 0 ? "#2ab8c8" : "none"}
-              color={wishlist.length > 0 ? "#2ab8c8" : "currentColor"}
+              color={wishlist.length > 0 ? "#2ab8c8" : "#4a3070"}
             />
             {wishlist.length > 0 && (
               <span
-                className="absolute -top-1 -right-1 w-3 h-3 rounded-full text-xs flex items-center justify-center"
                 style={{
+                  position: "absolute",
+                  top: -4,
+                  right: -4,
                   background: "#2ab8c8",
                   color: "#fff",
-                  fontSize: "8px",
-                  fontWeight: 700,
+                  borderRadius: "50%",
+                  width: 12,
+                  height: 12,
+                  fontSize: 8,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
               >
                 {wishlist.length}
@@ -190,14 +262,22 @@ export default function Navbar() {
               cursor: "pointer",
             }}
           >
-            <ShoppingBag size={15} />
+            <ShoppingBag size={15} color="#4a3070" />
             {cartCount > 0 && (
               <span
-                className="absolute -top-1 -right-1 w-3 h-3 rounded-full text-xs flex items-center justify-center"
                 style={{
-                  background: "#2ab8c8",
-                  color: "#fff",
-                  fontSize: "8px",
+                  position: "absolute",
+                  top: -4,
+                  right: -4,
+                  background: "#D4AF37",
+                  color: "#1a1a1a",
+                  borderRadius: "50%",
+                  width: 12,
+                  height: 12,
+                  fontSize: 8,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                   fontWeight: 700,
                 }}
               >
@@ -210,29 +290,45 @@ export default function Navbar() {
             <button
               type="button"
               data-ocid="nav.logout.button"
-              onClick={() => {
-                logout();
-                navigate("home");
+              onClick={logout}
+              style={{
+                fontFamily: "Cormorant Garamond, serif",
+                fontSize: "0.65rem",
+                letterSpacing: "0.1em",
+                color: "#9b6e9b",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                padding: 0,
               }}
-              className="btn-outline-gold"
-              style={{ fontSize: "0.6rem", padding: "2px 8px" }}
             >
               Logout
             </button>
           ) : (
             <button
               type="button"
-              data-ocid="nav.login.button"
+              data-ocid="nav.login.link"
               onClick={() => navigate("login")}
-              className="btn-gold"
-              style={{ fontSize: "0.6rem", padding: "2px 8px" }}
+              style={{
+                fontFamily: "Cormorant Garamond, serif",
+                fontSize: "0.65rem",
+                letterSpacing: "0.1em",
+                color: "#2ab8c8",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                padding: 0,
+              }}
             >
               Login
             </button>
           )}
 
+          {/* Mobile Menu Toggle */}
           <button
             type="button"
+            data-ocid="nav.menu.toggle"
+            onClick={() => setOpen(!open)}
             className="md:hidden"
             style={{
               color: "#4a3070",
@@ -240,31 +336,73 @@ export default function Navbar() {
               border: "none",
               cursor: "pointer",
             }}
-            onClick={() => setOpen(!open)}
-            data-ocid="nav.menu.toggle"
           >
             {open ? <X size={16} /> : <Menu size={16} />}
           </button>
         </div>
       </div>
 
-      {/* Mobile menu */}
+      {/* Mobile Menu Dropdown */}
       {open && (
         <div
-          className="md:hidden px-5 pb-3 flex flex-col gap-3"
           style={{
+            background: "rgba(240,230,255,0.97)",
+            backdropFilter: "blur(20px)",
             borderTop: "1px solid rgba(212,175,55,0.2)",
-            background: "rgba(240,230,255,0.85)",
-            backdropFilter: "blur(18px)",
+            padding: "16px 20px",
           }}
         >
-          {link("home", "Home")}
-          {link("shop", "Shop")}
-          {link("legacy", "Our Legacy")}
-          {link("orders", "My Orders")}
-          {adminLevel === "primary" && link("admin", "Admin Panel")}
-          {adminLevel === "secondary" &&
-            link("admin-secondary", "Shrimati Ji Dashboard")}
+          <div className="flex flex-col gap-4">
+            {link("home", "Home")}
+            {link("shop", "Shop")}
+            {link("legacy", "Our Legacy")}
+            {isLoggedIn && link("orders", "My Orders")}
+            {isLoggedIn && link("wishlist", "Wishlist")}
+            {isLoggedIn && link("cart", "Cart")}
+            {adminLevel === "primary" && link("admin", "Admin")}
+            {adminLevel === "secondary" && link("admin-secondary", "Dashboard")}
+            {isLoggedIn ? (
+              <button
+                type="button"
+                onClick={() => {
+                  logout();
+                  setOpen(false);
+                }}
+                style={{
+                  fontFamily: "Cormorant Garamond, serif",
+                  fontSize: "0.75rem",
+                  color: "#e05",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  textAlign: "left",
+                  padding: 0,
+                }}
+              >
+                Logout
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  navigate("login");
+                  setOpen(false);
+                }}
+                style={{
+                  fontFamily: "Cormorant Garamond, serif",
+                  fontSize: "0.75rem",
+                  color: "#2ab8c8",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  textAlign: "left",
+                  padding: 0,
+                }}
+              >
+                Login
+              </button>
+            )}
+          </div>
         </div>
       )}
     </nav>

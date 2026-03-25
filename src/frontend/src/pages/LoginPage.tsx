@@ -27,6 +27,13 @@ export default function LoginPage() {
     }, 1000);
   };
 
+  const inputStyle: React.CSSProperties = {
+    background: "rgba(255,255,255,0.05)",
+    border: "1px solid rgba(14,116,144,0.4)",
+    borderRadius: "8px",
+    padding: "12px 16px",
+  };
+
   return (
     <div
       className="min-h-screen flex items-center justify-center px-6 py-24"
@@ -38,8 +45,10 @@ export default function LoginPage() {
       <div className="glass-card p-10 w-full max-w-md">
         <div className="text-center mb-8">
           <img
-            src="/assets/generated/mishi-logo-golden-final.dim_800x800.png"
+            src="/assets/images/logo.png"
             alt="MISHI"
+            loading="eager"
+            fetchPriority="high"
             className="h-16 w-auto mx-auto mb-4"
             style={{
               objectFit: "contain",
@@ -57,9 +66,6 @@ export default function LoginPage() {
           >
             Royal Login
           </h1>
-          <p className="text-gray-400 text-sm mt-1">
-            Sign in with your mobile number
-          </p>
         </div>
 
         <div className="space-y-5">
@@ -72,15 +78,7 @@ export default function LoginPage() {
                 >
                   Mobile Number
                 </label>
-                <div
-                  className="flex items-center gap-2"
-                  style={{
-                    background: "rgba(255,255,255,0.05)",
-                    border: "1px solid rgba(14,116,144,0.4)",
-                    borderRadius: "8px",
-                    padding: "12px 16px",
-                  }}
-                >
+                <div className="flex items-center gap-2" style={inputStyle}>
                   <Smartphone size={18} className="text-cyan-400" />
                   <span className="text-gray-400 text-sm">+91</span>
                   <input
@@ -117,14 +115,7 @@ export default function LoginPage() {
                 >
                   Enter OTP
                 </label>
-                <div
-                  style={{
-                    background: "rgba(255,255,255,0.05)",
-                    border: "1px solid rgba(14,116,144,0.4)",
-                    borderRadius: "8px",
-                    padding: "12px 16px",
-                  }}
-                >
+                <div style={inputStyle}>
                   <input
                     id="otp-input"
                     data-ocid="login.otp.input"

@@ -16,7 +16,8 @@ function useIsMobile(breakpoint = 640) {
 }
 
 // ─── Types ───────────────────────────────────────────────────────────────────
-type Role = "superAdmin" | "manager" | "viewer";
+type Role = "founder" | "coFounder" | "superAdmin" | "manager" | "viewer";
+const CO_FOUNDER_GMAIL = "kshivani05231@gmail.com";
 type TabId =
   | "products"
   | "add"
@@ -24,7 +25,8 @@ type TabId =
   | "orders"
   | "team"
   | "settings"
-  | "design";
+  | "design"
+  | "reviews";
 
 type Session = {
   gmail: string;
@@ -36,9 +38,10 @@ type Session = {
 type TeamMember = {
   gmail: string;
   name: string;
-  role: "manager" | "viewer";
+  role: "manager" | "viewer" | "coFounder";
   addedAt: string;
   isRevoked: boolean;
+  isPermanent?: boolean;
 };
 
 const SUPER_ADMIN_GMAIL = "mishiofficial1701@gmail.com";
@@ -310,6 +313,16 @@ function DarkSelect(props: React.SelectHTMLAttributes<HTMLSelectElement>) {
 
 function RoleBadge({ role }: { role: Role }) {
   const configs: Record<Role, { label: string; color: string; bg: string }> = {
+    founder: {
+      label: "♛ Founder",
+      color: "#d4af37",
+      bg: "rgba(100,0,150,0.18)",
+    },
+    coFounder: {
+      label: "✦ Co-Founder",
+      color: "#2ab8c8",
+      bg: "rgba(42,184,200,0.12)",
+    },
     superAdmin: {
       label: "Super Admin",
       color: "#d4af37",
@@ -322,7 +335,7 @@ function RoleBadge({ role }: { role: Role }) {
     },
     viewer: { label: "Viewer", color: "#718096", bg: "rgba(113,128,150,0.12)" },
   };
-  const c = configs[role];
+  const c = configs[role] ?? configs.viewer;
   return (
     <span
       style={{
@@ -349,6 +362,9 @@ function ProductListTab() {
   const [editName, setEditName] = useState("");
   const [editPrice, setEditPrice] = useState("");
   const [saveMsg, setSaveMsg] = useState(false);
+  const [imgEditId, setImgEditId] = useState<number | null>(null);
+  const [imgPreview, setImgPreview] = useState<string>("");
+  const imgDrop = useRef<HTMLInputElement>(null);
 
   const startEdit = (p: { id: number; name: string; price: number }) => {
     setEditingId(p.id);
@@ -390,7 +406,8 @@ function ProductListTab() {
               <th style={s.th}>Product Name</th>
               <th style={s.th}>Price (₹)</th>
               <th style={s.th}>Status</th>
-              <th style={s.th}>Action</th>
+              <th style={s.th}>Edit</th>
+              <th style={s.th}>Update Image</th>
             </tr>
           </thead>
           <tbody>
@@ -399,7 +416,8 @@ function ProductListTab() {
                 <td style={i % 2 === 0 ? s.td : s.tdAlt}>
                   <img
                     src={
-                      p.imageUrl || `https://picsum.photos/seed/${p.id}/48/48`
+                      p.imageUrl ||
+                      "/assets/generated/product-chandbali.dim_400x500.jpg"
                     }
                     alt={p.name}
                     style={{
@@ -525,6 +543,132 @@ function ProductListTab() {
         </table>
       </div>
 
+      {imgEditId !== null && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.8)",
+            zIndex: 1000,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          data-ocid="product_list.modal"
+        >
+          <div
+            style={{
+              background: "#1a1d23",
+              border: "1px solid #2d3748",
+              borderRadius: "10px",
+              padding: "28px",
+              width: 360,
+              maxWidth: "calc(100vw - 32px)",
+            }}
+          >
+            <h3
+              style={{
+                color: "#e2e8f0",
+                fontSize: "15px",
+                fontWeight: 700,
+                marginBottom: "16px",
+              }}
+            >
+              Update Product Image
+            </h3>
+            <div
+              data-ocid="product_list.dropzone"
+              // biome-ignore lint/a11y/useSemanticElements: drag-drop container
+              role="button"
+              tabIndex={0}
+              style={{
+                border: "2px dashed #4a5568",
+                borderRadius: "8px",
+                padding: "24px",
+                textAlign: "center",
+                cursor: "pointer",
+                marginBottom: "14px",
+                background: "rgba(255,255,255,0.02)",
+              }}
+              onClick={() => imgDrop.current?.click()}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ")
+                  imgDrop.current?.click();
+              }}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => {
+                e.preventDefault();
+                const file = e.dataTransfer.files?.[0];
+                if (file?.type.startsWith("image/")) {
+                  const reader = new FileReader();
+                  reader.onload = (ev) =>
+                    setImgPreview(ev.target?.result as string);
+                  reader.readAsDataURL(file);
+                }
+              }}
+            >
+              <p style={{ color: "#718096", fontSize: "13px" }}>
+                📁 Drop image here or click to browse
+              </p>
+              <input
+                ref={imgDrop}
+                type="file"
+                accept="image/*"
+                style={{ display: "none" }}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (ev) =>
+                      setImgPreview(ev.target?.result as string);
+                    reader.readAsDataURL(file);
+                  }
+                }}
+              />
+            </div>
+            {imgPreview && (
+              <img
+                src={imgPreview}
+                alt="preview"
+                style={{
+                  width: "100%",
+                  height: "160px",
+                  objectFit: "cover",
+                  borderRadius: "6px",
+                  marginBottom: "14px",
+                }}
+              />
+            )}
+            <div style={{ display: "flex", gap: "10px" }}>
+              <button
+                type="button"
+                style={s.btn}
+                data-ocid="product_list.save_button"
+                onClick={() => {
+                  if (imgPreview && imgEditId !== null) {
+                    updateProduct(imgEditId, { imageUrl: imgPreview });
+                    setImgEditId(null);
+                    setImgPreview("");
+                  }
+                }}
+              >
+                Save Image
+              </button>
+              <button
+                type="button"
+                style={s.btnGhost}
+                data-ocid="product_list.cancel_button"
+                onClick={() => {
+                  setImgEditId(null);
+                  setImgPreview("");
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <div style={{ marginTop: "32px" }}>
         {saveMsg && (
           <div
@@ -588,7 +732,8 @@ function AddJewelryTab({ onLog }: { onLog: (entry: string) => void }) {
       basePrice: Number(form.price),
       silverWeight: form.category === "silver" ? 10 : undefined,
       sizes: [],
-      imageUrl: form.imageUrl || "https://picsum.photos/seed/new/400/500",
+      imageUrl:
+        form.imageUrl || "/assets/generated/product-chandbali.dim_400x500.jpg",
       stock: Number(form.stock),
       isActive: true,
     });
@@ -704,57 +849,71 @@ function AddJewelryTab({ onLog }: { onLog: (entry: string) => void }) {
         <label htmlFor="aj-image" style={s.label}>
           Image URL
         </label>
-        <DarkInput
-          id="aj-image"
-          data-ocid="add_jewelry.image_url.input"
-          type="text"
-          value={form.imageUrl}
-          onChange={(e) => patch("imageUrl", e.target.value)}
-          placeholder="https://..."
-        />
         <div
+          data-ocid="add_jewelry.dropzone"
+          // biome-ignore lint/a11y/useSemanticElements: drag-drop container
+          role="button"
+          tabIndex={0}
           style={{
-            marginTop: "8px",
-            display: "flex",
-            alignItems: "center",
-            gap: "10px",
+            border: "2px dashed #4a5568",
+            borderRadius: "8px",
+            padding: "20px",
+            textAlign: "center",
+            cursor: "pointer",
+            background: "rgba(255,255,255,0.02)",
+          }}
+          onClick={() => document.getElementById("aj-img-inp")?.click()}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ")
+              document.getElementById("aj-img-inp")?.click();
+          }}
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={(e) => {
+            e.preventDefault();
+            const file = e.dataTransfer.files?.[0];
+            if (file?.type.startsWith("image/")) {
+              const reader = new FileReader();
+              reader.onload = (ev) =>
+                patch("imageUrl", ev.target?.result as string);
+              reader.readAsDataURL(file);
+            }
           }}
         >
+          <p style={{ color: "#718096", fontSize: "13px" }}>
+            📁 Drop images here or click to browse (supports multiple)
+          </p>
           <input
-            id="aj-image-upload"
+            id="aj-img-inp"
             type="file"
             accept="image/*"
+            multiple
             style={{ display: "none" }}
             data-ocid="add_jewelry.upload_button"
             onChange={(e) => {
               const file = e.target.files?.[0];
               if (file) {
-                const url = URL.createObjectURL(file);
-                patch("imageUrl", url);
+                const reader = new FileReader();
+                reader.onload = (ev) =>
+                  patch("imageUrl", ev.target?.result as string);
+                reader.readAsDataURL(file);
               }
             }}
           />
-          <button
-            type="button"
-            style={{ ...s.btnGhost, fontSize: "12px", padding: "6px 12px" }}
-            onClick={() => document.getElementById("aj-image-upload")?.click()}
-          >
-            📁 Upload Image
-          </button>
-          {form.imageUrl?.startsWith("blob:") && (
-            <img
-              src={form.imageUrl}
-              alt="Preview"
-              style={{
-                width: "60px",
-                height: "60px",
-                objectFit: "cover",
-                borderRadius: "6px",
-                border: "1px solid #2d3748",
-              }}
-            />
-          )}
         </div>
+        {form.imageUrl && (
+          <img
+            src={form.imageUrl}
+            alt="Preview"
+            style={{
+              width: "80px",
+              height: "80px",
+              objectFit: "cover",
+              borderRadius: "6px",
+              border: "1px solid #2d3748",
+              marginTop: "8px",
+            }}
+          />
+        )}
       </div>
 
       <div style={{ marginBottom: "20px" }}>
@@ -862,7 +1021,8 @@ function ChangePricesTab({ onLog }: { onLog: (entry: string) => void }) {
               <th style={s.th}>Category</th>
               <th style={s.th}>Current Price (₹)</th>
               <th style={s.th}>New Price (₹)</th>
-              <th style={s.th}>Action</th>
+              <th style={s.th}>Edit</th>
+              <th style={s.th}>Update Image</th>
             </tr>
           </thead>
           <tbody>
@@ -1025,7 +1185,8 @@ function ViewOrdersTab() {
               <th style={s.th}>Total (₹)</th>
               <th style={s.th}>Status</th>
               <th style={s.th}>Approved</th>
-              <th style={s.th}>Action</th>
+              <th style={s.th}>Edit</th>
+              <th style={s.th}>Update Image</th>
             </tr>
           </thead>
           <tbody>
@@ -1103,13 +1264,19 @@ function ViewOrdersTab() {
 // ─── Tab: Team ────────────────────────────────────────────────────────────────
 function TeamTab({
   teamMembers,
-  setTeamMembers,
+  onAddMember,
+  onRemoveMember,
+  onRevokeMember,
+  onRestoreMember,
   onLog,
   currentSession,
   onRevokeCurrentUser,
 }: {
   teamMembers: TeamMember[];
-  setTeamMembers: React.Dispatch<React.SetStateAction<TeamMember[]>>;
+  onAddMember: (member: TeamMember) => void;
+  onRemoveMember: (gmail: string) => void;
+  onRevokeMember: (gmail: string) => void;
+  onRestoreMember: (gmail: string) => void;
   onLog: (entry: string) => void;
   currentSession: Session | null;
   onRevokeCurrentUser: (gmail: string) => void;
@@ -1138,6 +1305,10 @@ function TeamTab({
       setFormError("Cannot add Super Admin as team member.");
       return;
     }
+    if (form.gmail.toLowerCase() === CO_FOUNDER_GMAIL) {
+      setFormError("Co-Founder is a permanent role and cannot be re-added.");
+      return;
+    }
     if (
       teamMembers.some(
         (m) => m.gmail.toLowerCase() === form.gmail.toLowerCase(),
@@ -1153,7 +1324,7 @@ function TeamTab({
       addedAt: new Date().toLocaleDateString("en-IN"),
       isRevoked: false,
     };
-    setTeamMembers((prev) => [...prev, member]);
+    onAddMember(member);
     onLog(
       `Team member added: ${member.name} (${member.gmail}) as ${member.role}`,
     );
@@ -1163,9 +1334,7 @@ function TeamTab({
   };
 
   const revokeAccess = (gmail: string) => {
-    setTeamMembers((prev) =>
-      prev.map((m) => (m.gmail === gmail ? { ...m, isRevoked: true } : m)),
-    );
+    onRevokeMember(gmail);
     const member = teamMembers.find((m) => m.gmail === gmail);
     if (member) onLog(`Access revoked: ${member.name} (${member.gmail})`);
     // force logout if this is the current session
@@ -1173,16 +1342,14 @@ function TeamTab({
   };
 
   const restoreAccess = (gmail: string) => {
-    setTeamMembers((prev) =>
-      prev.map((m) => (m.gmail === gmail ? { ...m, isRevoked: false } : m)),
-    );
+    onRestoreMember(gmail);
     const member = teamMembers.find((m) => m.gmail === gmail);
     if (member) onLog(`Access restored: ${member.name} (${member.gmail})`);
   };
 
   const deleteMember = (gmail: string) => {
     const member = teamMembers.find((m) => m.gmail === gmail);
-    setTeamMembers((prev) => prev.filter((m) => m.gmail !== gmail));
+    onRemoveMember(gmail);
     if (member) onLog(`Team member removed: ${member.name} (${member.gmail})`);
   };
 
@@ -1345,7 +1512,21 @@ function TeamTab({
             )}
             {teamMembers.map((m, i) => (
               <tr key={m.gmail} data-ocid={`team.row.${i + 1}`}>
-                <td style={i % 2 === 0 ? s.td : s.tdAlt}>{m.name}</td>
+                <td style={i % 2 === 0 ? s.td : s.tdAlt}>
+                  {m.name}
+                  {m.isPermanent && (
+                    <span
+                      style={{
+                        marginLeft: 6,
+                        fontSize: 10,
+                        color: "#2ab8c8",
+                        fontWeight: 700,
+                      }}
+                    >
+                      👑 Permanent
+                    </span>
+                  )}
+                </td>
                 <td style={i % 2 === 0 ? s.td : s.tdAlt}>
                   <span
                     style={{
@@ -1358,23 +1539,7 @@ function TeamTab({
                   </span>
                 </td>
                 <td style={i % 2 === 0 ? s.td : s.tdAlt}>
-                  <span
-                    style={{
-                      display: "inline-block",
-                      padding: "2px 8px",
-                      borderRadius: "9999px",
-                      fontSize: "11px",
-                      fontWeight: 600,
-                      color: m.role === "manager" ? "#f6ad55" : "#718096",
-                      background:
-                        m.role === "manager"
-                          ? "rgba(246,173,85,0.12)"
-                          : "rgba(113,128,150,0.12)",
-                      border: `1px solid ${m.role === "manager" ? "#f6ad5555" : "#71809655"}`,
-                    }}
-                  >
-                    {m.role === "manager" ? "Manager" : "Viewer"}
-                  </span>
+                  <RoleBadge role={m.role as Role} />
                 </td>
                 <td
                   style={{
@@ -1403,39 +1568,51 @@ function TeamTab({
                   </span>
                 </td>
                 <td style={i % 2 === 0 ? s.td : s.tdAlt}>
-                  <div style={{ display: "flex", gap: "6px" }}>
-                    {m.isRevoked ? (
-                      <button
-                        type="button"
-                        style={s.btnRestoreSm}
-                        data-ocid={`team.restore_button.${i + 1}`}
-                        onClick={() => restoreAccess(m.gmail)}
-                      >
-                        Restore Access
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        style={s.btnDangerSm}
-                        data-ocid={`team.revoke_button.${i + 1}`}
-                        onClick={() => revokeAccess(m.gmail)}
-                      >
-                        Revoke Access
-                      </button>
-                    )}
-                    <button
-                      type="button"
+                  {m.isPermanent && currentSession?.role !== "founder" ? (
+                    <span
                       style={{
-                        ...s.btnDangerSm,
-                        background: "#2d3748",
-                        color: "#fc8181",
+                        fontSize: 11,
+                        color: "#4a5568",
+                        fontStyle: "italic",
                       }}
-                      data-ocid={`team.delete_button.${i + 1}`}
-                      onClick={() => deleteMember(m.gmail)}
                     >
-                      Delete
-                    </button>
-                  </div>
+                      Permanent — Co-Founder
+                    </span>
+                  ) : (
+                    <div style={{ display: "flex", gap: "6px" }}>
+                      {m.isRevoked ? (
+                        <button
+                          type="button"
+                          style={s.btnRestoreSm}
+                          data-ocid={`team.restore_button.${i + 1}`}
+                          onClick={() => restoreAccess(m.gmail)}
+                        >
+                          Restore Access
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          style={s.btnDangerSm}
+                          data-ocid={`team.revoke_button.${i + 1}`}
+                          onClick={() => revokeAccess(m.gmail)}
+                        >
+                          Revoke Access
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        style={{
+                          ...s.btnDangerSm,
+                          background: "#2d3748",
+                          color: "#fc8181",
+                        }}
+                        data-ocid={`team.delete_button.${i + 1}`}
+                        onClick={() => deleteMember(m.gmail)}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  )}
                 </td>
               </tr>
             ))}
@@ -1451,14 +1628,14 @@ function SettingsTab({
   emergencyPin,
   setEmergencyPin,
   onForceLogoutAll,
-  masterPassword,
   onMasterPasswordChange,
+  masterPassword,
 }: {
   emergencyPin: string;
   setEmergencyPin: (pin: string) => void;
   onForceLogoutAll: () => void;
-  masterPassword: string;
   onMasterPasswordChange: (pw: string) => void;
+  masterPassword: string;
 }) {
   const [pinInput, setPinInput] = useState(emergencyPin);
   const [pinStatus, setPinStatus] = useState<"idle" | "success" | "error">(
@@ -1874,6 +2051,113 @@ function ActivityLogBar({ log }: { log: string[] }) {
 }
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
+
+// ─── File Manager Row ─────────────────────────────────────────────────────────
+function FileManagerRow({
+  label,
+  currentUrl,
+  onSave,
+}: {
+  label: string;
+  currentUrl: string;
+  onSave: (url: string) => void;
+}) {
+  const [editUrl, setEditUrl] = useState(currentUrl);
+  const [saved, setSaved] = useState(false);
+
+  const handleSave = () => {
+    if (!editUrl.trim()) return;
+    onSave(editUrl.trim());
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2500);
+  };
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(currentUrl).catch(() => {});
+  };
+
+  return (
+    <div
+      style={{
+        marginBottom: "12px",
+        padding: "10px 12px",
+        background: "rgba(255,255,255,0.03)",
+        borderRadius: "6px",
+        border: "1px solid #2d3748",
+      }}
+    >
+      <div
+        style={{
+          fontSize: "11px",
+          color: "#a0aec0",
+          marginBottom: "6px",
+          fontWeight: 600,
+        }}
+      >
+        {label}
+      </div>
+      <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+        <input
+          type="text"
+          value={editUrl}
+          onChange={(e) => {
+            setEditUrl(e.target.value);
+            setSaved(false);
+          }}
+          placeholder="Paste image URL..."
+          data-ocid="design.file_manager.input"
+          style={{
+            flex: 1,
+            padding: "6px 10px",
+            background: "rgba(255,255,255,0.05)",
+            border: "1px solid #4a5568",
+            borderRadius: "4px",
+            color: "#e2e8f0",
+            fontSize: "11px",
+            fontFamily: "monospace",
+            minWidth: 0,
+          }}
+        />
+        <button
+          type="button"
+          onClick={handleCopy}
+          title="Copy current URL"
+          style={{
+            padding: "6px 8px",
+            background: "#2d3748",
+            border: "1px solid #4a5568",
+            borderRadius: "4px",
+            color: "#a0aec0",
+            fontSize: "11px",
+            cursor: "pointer",
+            flexShrink: 0,
+          }}
+        >
+          📋
+        </button>
+        <button
+          type="button"
+          onClick={handleSave}
+          data-ocid="design.file_manager.save_button"
+          style={{
+            padding: "6px 10px",
+            background: saved ? "#16a34a" : "#3b82f6",
+            border: "none",
+            borderRadius: "4px",
+            color: "#fff",
+            fontSize: "11px",
+            cursor: "pointer",
+            flexShrink: 0,
+            fontWeight: 600,
+          }}
+        >
+          {saved ? "✓" : "Save"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ─── Website Design Tab ──────────────────────────────────────────────────────
 function ImageUploadCard({
   label,
@@ -2001,7 +2285,7 @@ function ImageUploadCard({
 }
 
 function WebsiteDesignTab() {
-  const { siteImages, updateSiteImage } = useMishi();
+  const { siteImages, updateSiteImage, resetSiteImages } = useMishi();
 
   return (
     <div>
@@ -2048,6 +2332,68 @@ function WebsiteDesignTab() {
           currentSrc={siteImages.heroUrl}
           onUpload={(url) => updateSiteImage("heroUrl", url)}
         />
+        <div style={{ marginTop: "8px" }}>
+          <label
+            htmlFor="hero-url-input"
+            style={{
+              color: "#a78bfa",
+              fontSize: "12px",
+              display: "block",
+              marginBottom: "4px",
+            }}
+          >
+            Or paste Banner URL directly:
+          </label>
+          <div style={{ display: "flex", gap: "8px" }}>
+            <input
+              id="hero-url-input"
+              data-ocid="design.hero_url.input"
+              type="url"
+              placeholder="https://example.com/banner.jpg"
+              style={{
+                flex: 1,
+                padding: "8px 12px",
+                background: "rgba(255,255,255,0.05)",
+                border: "1px solid rgba(167,139,250,0.4)",
+                borderRadius: "8px",
+                color: "white",
+                fontSize: "13px",
+                outline: "none",
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  const val = (e.target as HTMLInputElement).value.trim();
+                  if (val) updateSiteImage("heroUrl", val);
+                }
+              }}
+            />
+            <button
+              data-ocid="design.hero_url.button"
+              type="button"
+              onClick={(e) => {
+                const input = e.currentTarget
+                  .previousSibling as HTMLInputElement;
+                const val = input.value.trim();
+                if (val) {
+                  updateSiteImage("heroUrl", val);
+                  input.value = "";
+                }
+              }}
+              style={{
+                padding: "8px 16px",
+                background: "linear-gradient(135deg, #7c3aed, #2ab8c8)",
+                border: "none",
+                borderRadius: "8px",
+                color: "white",
+                fontSize: "13px",
+                cursor: "pointer",
+                fontWeight: "600",
+              }}
+            >
+              Apply
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Logo */}
@@ -2078,6 +2424,68 @@ function WebsiteDesignTab() {
           currentSrc={siteImages.logoUrl}
           onUpload={(url) => updateSiteImage("logoUrl", url)}
         />
+        <div style={{ marginTop: "8px" }}>
+          <label
+            htmlFor="logo-url-input"
+            style={{
+              color: "#a78bfa",
+              fontSize: "12px",
+              display: "block",
+              marginBottom: "4px",
+            }}
+          >
+            Or paste Logo URL directly:
+          </label>
+          <div style={{ display: "flex", gap: "8px" }}>
+            <input
+              id="logo-url-input"
+              data-ocid="design.logo_url.input"
+              type="url"
+              placeholder="https://example.com/logo.png"
+              style={{
+                flex: 1,
+                padding: "8px 12px",
+                background: "rgba(255,255,255,0.05)",
+                border: "1px solid rgba(167,139,250,0.4)",
+                borderRadius: "8px",
+                color: "white",
+                fontSize: "13px",
+                outline: "none",
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  const val = (e.target as HTMLInputElement).value.trim();
+                  if (val) updateSiteImage("logoUrl", val);
+                }
+              }}
+            />
+            <button
+              data-ocid="design.logo_url.button"
+              type="button"
+              onClick={(e) => {
+                const input = e.currentTarget
+                  .previousSibling as HTMLInputElement;
+                const val = input.value.trim();
+                if (val) {
+                  updateSiteImage("logoUrl", val);
+                  input.value = "";
+                }
+              }}
+              style={{
+                padding: "8px 16px",
+                background: "linear-gradient(135deg, #7c3aed, #2ab8c8)",
+                border: "none",
+                borderRadius: "8px",
+                color: "white",
+                fontSize: "13px",
+                cursor: "pointer",
+                fontWeight: "600",
+              }}
+            >
+              Apply
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Collection Images */}
@@ -2129,6 +2537,74 @@ function WebsiteDesignTab() {
         />
       </div>
 
+      <div style={{ marginTop: "24px", textAlign: "center" }}>
+        <button
+          data-ocid="design.reset.button"
+          type="button"
+          onClick={() => {
+            if (confirm("Reset all images to defaults?")) {
+              resetSiteImages();
+            }
+          }}
+          style={{
+            padding: "10px 24px",
+            background: "rgba(239,68,68,0.2)",
+            border: "1px solid rgba(239,68,68,0.4)",
+            borderRadius: "8px",
+            color: "#fca5a5",
+            fontSize: "13px",
+            cursor: "pointer",
+          }}
+        >
+          Reset to Default Images
+        </button>
+      </div>
+
+      {/* File Manager */}
+      <div
+        style={{
+          background: "#1a1d23",
+          border: "1px solid #2d3748",
+          borderRadius: "8px",
+          padding: "20px",
+          marginBottom: "20px",
+          marginTop: "20px",
+        }}
+      >
+        <h3
+          style={{
+            fontSize: "14px",
+            fontWeight: 600,
+            color: "#a0aec0",
+            marginBottom: "12px",
+            textTransform: "uppercase",
+            letterSpacing: "0.06em",
+          }}
+        >
+          📂 File Manager — Current Image URLs
+        </h3>
+        <p style={{ fontSize: "11px", color: "#718096", marginBottom: "16px" }}>
+          View and manually edit the URL for any image. Paste a direct HTTPS
+          link and hit Save.
+        </p>
+        {[
+          { key: "heroUrl" as const, label: "Hero Banner" },
+          { key: "logoUrl" as const, label: "Logo" },
+          { key: "necklaceImg" as const, label: "Necklace Collection" },
+          { key: "ringsImg" as const, label: "Rings Collection" },
+          { key: "banglesImg" as const, label: "Bangles Collection" },
+          { key: "earringsImg" as const, label: "Earrings Collection" },
+          { key: "ethnicImg" as const, label: "Ethnic Wear Collection" },
+        ].map(({ key, label }) => (
+          <FileManagerRow
+            key={key}
+            label={label}
+            currentUrl={siteImages[key]}
+            onSave={(url) => updateSiteImage(key, url)}
+          />
+        ))}
+      </div>
+
       {/* View Site */}
       <button
         type="button"
@@ -2155,14 +2631,201 @@ function WebsiteDesignTab() {
   );
 }
 
+// ─── Reviews Tab ─────────────────────────────────────────────────────────────
+function ReviewsTab() {
+  const { reviews, approveReview, rejectReview, products } = useMishi();
+  const pending = reviews.filter((r) => !r.isApproved);
+  const approved = reviews.filter((r) => r.isApproved);
+  const maskPhone = (p: string) =>
+    p.length > 4 ? `****${p.slice(-4)}` : "****";
+  const StarDisplay = ({ rating }: { rating: number }) => (
+    <span style={{ color: "#F0D060", fontSize: "14px" }}>
+      {"⭐".repeat(rating)}
+      {"☆".repeat(5 - rating)}
+    </span>
+  );
+  return (
+    <div data-ocid="reviews.panel">
+      <h2
+        style={{
+          fontSize: "16px",
+          fontWeight: 700,
+          marginBottom: "20px",
+          color: "#e2e8f0",
+        }}
+      >
+        Customer Reviews
+      </h2>
+      <h3
+        style={{
+          fontSize: "14px",
+          fontWeight: 600,
+          color: "#e2e8f0",
+          marginBottom: "12px",
+        }}
+      >
+        Pending Approval ({pending.length})
+      </h3>
+      {pending.length === 0 ? (
+        <p
+          style={{ color: "#4a5568", fontSize: "13px", marginBottom: "24px" }}
+          data-ocid="reviews.empty_state"
+        >
+          No pending reviews.
+        </p>
+      ) : (
+        <div style={{ overflowX: "auto", marginBottom: "32px" }}>
+          <table style={s.table} data-ocid="reviews.table">
+            <thead>
+              <tr>
+                <th style={s.th}>Product</th>
+                <th style={s.th}>Customer</th>
+                <th style={s.th}>Rating</th>
+                <th style={s.th}>Comment</th>
+                <th style={s.th}>Date</th>
+                <th style={s.th}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pending.map((r, i) => {
+                const product = products.find((p) => p.id === r.productId);
+                return (
+                  <tr key={r.id} data-ocid={`reviews.item.${i + 1}`}>
+                    <td style={s.td}>{product?.name || "Unknown"}</td>
+                    <td style={s.td}>{maskPhone(r.customerPhone)}</td>
+                    <td style={s.td}>
+                      <StarDisplay rating={r.rating} />
+                    </td>
+                    <td
+                      style={{
+                        ...s.td,
+                        maxWidth: "180px",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {r.comment}
+                    </td>
+                    <td style={s.td}>
+                      {new Date(r.submittedAt).toLocaleDateString()}
+                    </td>
+                    <td style={s.td}>
+                      <div style={{ display: "flex", gap: "8px" }}>
+                        <button
+                          type="button"
+                          style={{
+                            ...s.btn,
+                            background: "#276749",
+                            padding: "4px 10px",
+                            fontSize: "11px",
+                          }}
+                          data-ocid={`reviews.confirm_button.${i + 1}`}
+                          onClick={() => approveReview(r.id)}
+                        >
+                          ✓ Approve
+                        </button>
+                        <button
+                          type="button"
+                          style={{
+                            ...s.btnDanger,
+                            padding: "4px 10px",
+                            fontSize: "11px",
+                          }}
+                          data-ocid={`reviews.delete_button.${i + 1}`}
+                          onClick={() => rejectReview(r.id)}
+                        >
+                          ✗ Reject
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+      <h3
+        style={{
+          fontSize: "14px",
+          fontWeight: 600,
+          color: "#e2e8f0",
+          marginBottom: "12px",
+        }}
+      >
+        Approved ({approved.length})
+      </h3>
+      {approved.length === 0 ? (
+        <p style={{ color: "#4a5568", fontSize: "13px" }}>
+          No approved reviews yet.
+        </p>
+      ) : (
+        <div style={{ overflowX: "auto" }}>
+          <table style={s.table}>
+            <thead>
+              <tr>
+                <th style={s.th}>Product</th>
+                <th style={s.th}>Customer</th>
+                <th style={s.th}>Rating</th>
+                <th style={s.th}>Comment</th>
+                <th style={s.th}>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {approved.map((r, i) => {
+                const product = products.find((p) => p.id === r.productId);
+                return (
+                  <tr key={r.id}>
+                    <td style={i % 2 === 0 ? s.td : s.tdAlt}>
+                      {product?.name || "Unknown"}
+                    </td>
+                    <td style={i % 2 === 0 ? s.td : s.tdAlt}>
+                      {maskPhone(r.customerPhone)}
+                    </td>
+                    <td style={i % 2 === 0 ? s.td : s.tdAlt}>
+                      <StarDisplay rating={r.rating} />
+                    </td>
+                    <td
+                      style={{
+                        ...(i % 2 === 0 ? s.td : s.tdAlt),
+                        maxWidth: "180px",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {r.comment}
+                    </td>
+                    <td style={i % 2 === 0 ? s.td : s.tdAlt}>
+                      {new Date(r.submittedAt).toLocaleDateString()}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function InternalControlPage() {
   const isMobile = useIsMobile();
   const [session, setSession] = useState<Session | null>(null);
-  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const {
+    teamMembers,
+    addTeamMember,
+    removeTeamMember,
+    revokeTeamMember,
+    restoreTeamMember,
+    masterPassword,
+    setMasterPassword,
+  } = useMishi();
   const [activityLog, setActivityLog] = useState<string[]>([]);
   const [sessionVersion, setSessionVersion] = useState(0);
   const [emergencyPin, setEmergencyPin] = useState("000000");
-  const [masterPassword, setMasterPassword] = useState("MISHIOWNER2025");
 
   // Login state
   const [loginStep, setLoginStep] = useState<1 | 2>(1);
@@ -2185,7 +2848,15 @@ export default function InternalControlPage() {
     setLoginError("");
 
     if (gmail === SUPER_ADMIN_GMAIL) {
-      // Super Admin needs password step
+      // Super Admin / Founder needs password step
+      setPendingGmail(gmail);
+      setPasswordInput("");
+      setLoginStep(2);
+      return;
+    }
+
+    if (gmail === CO_FOUNDER_GMAIL) {
+      // Co-Founder also uses master password
       setPendingGmail(gmail);
       setPasswordInput("");
       setLoginStep(2);
@@ -2200,7 +2871,7 @@ export default function InternalControlPage() {
       }
       setSession({
         gmail,
-        role: member.role,
+        role: member.role as Role,
         name: member.name,
         sessionVersion,
       });
@@ -2214,10 +2885,16 @@ export default function InternalControlPage() {
     e.preventDefault();
     setLoginError("");
     if (passwordInput === masterPassword) {
+      const isFounder = pendingGmail === SUPER_ADMIN_GMAIL;
+      const isCoFounder = pendingGmail === CO_FOUNDER_GMAIL;
       setSession({
         gmail: pendingGmail,
-        role: "superAdmin",
-        name: "Super Admin",
+        role: isFounder ? "founder" : isCoFounder ? "coFounder" : "superAdmin",
+        name: isFounder
+          ? "Founder"
+          : isCoFounder
+            ? "Shivani (Co-Founder)"
+            : "Super Admin",
         sessionVersion,
       });
       setLoginStep(1);
@@ -2255,6 +2932,7 @@ export default function InternalControlPage() {
   if (
     session &&
     session.role !== "superAdmin" &&
+    session.role !== "founder" &&
     session.sessionVersion !== sessionVersion
   ) {
     setSession(null);
@@ -2398,13 +3076,33 @@ export default function InternalControlPage() {
 
   // Tab definitions with role gating
   const allTabs: { id: TabId; label: string; roles: Role[] }[] = [
-    { id: "products", label: "Product List", roles: ["superAdmin", "manager"] },
-    { id: "add", label: "Add New Jewelry", roles: ["superAdmin", "manager"] },
-    { id: "prices", label: "Change Prices", roles: ["superAdmin", "manager"] },
-    { id: "orders", label: "Orders & Financials", roles: ["superAdmin"] },
-    { id: "team", label: "Team", roles: ["superAdmin"] },
-    { id: "settings", label: "Settings", roles: ["superAdmin"] },
-    { id: "design", label: "🎨 Website Design", roles: ["superAdmin"] },
+    {
+      id: "products",
+      label: "Product List",
+      roles: ["founder", "coFounder", "superAdmin", "manager"],
+    },
+    {
+      id: "add",
+      label: "Add New Jewelry",
+      roles: ["founder", "coFounder", "superAdmin", "manager"],
+    },
+    {
+      id: "prices",
+      label: "Change Prices",
+      roles: ["founder", "coFounder", "superAdmin", "manager"],
+    },
+    {
+      id: "orders",
+      label: "Orders & Financials",
+      roles: ["founder", "coFounder", "superAdmin"],
+    },
+    { id: "team", label: "Team", roles: ["founder", "superAdmin"] },
+    { id: "settings", label: "Settings", roles: ["founder", "superAdmin"] },
+    {
+      id: "design",
+      label: "🎨 Website Design",
+      roles: ["founder", "coFounder", "superAdmin"],
+    },
   ];
 
   const visibleTabs = allTabs.filter((t) => t.roles.includes(session.role));
@@ -2416,7 +3114,18 @@ export default function InternalControlPage() {
     <div style={s.root}>
       {/* Header */}
       <div style={s.header}>
-        <div>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <img
+            src="/assets/images/logo.png"
+            alt="MISHI Logo"
+            loading="eager"
+            style={{
+              height: 40,
+              width: 40,
+              objectFit: "contain",
+              mixBlendMode: "multiply",
+            }}
+          />
           <span style={s.headerTitle}>MISHI Internal Control Panel</span>
           <span
             style={{
@@ -2427,7 +3136,11 @@ export default function InternalControlPage() {
               letterSpacing: "0.08em",
             }}
           >
-            Super Admin Dashboard
+            {session.role === "founder"
+              ? "Founder Dashboard"
+              : session.role === "coFounder"
+                ? "Co-Founder Dashboard"
+                : "Super Admin Dashboard"}
           </span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
@@ -2494,27 +3207,30 @@ export default function InternalControlPage() {
             }}
           >
             {t.label}
-            {t.id === "team" && session.role === "superAdmin" && (
-              <span
-                style={{
-                  marginLeft: "6px",
-                  background: "#3b82f6",
-                  color: "#fff",
-                  fontSize: "10px",
-                  padding: "1px 5px",
-                  borderRadius: "9999px",
-                  fontWeight: 700,
-                }}
-              >
-                {teamMembers.length}
-              </span>
-            )}
+            {t.id === "team" &&
+              (session.role === "superAdmin" || session.role === "founder") && (
+                <span
+                  style={{
+                    marginLeft: "6px",
+                    background: "#3b82f6",
+                    color: "#fff",
+                    fontSize: "10px",
+                    padding: "1px 5px",
+                    borderRadius: "9999px",
+                    fontWeight: 700,
+                  }}
+                >
+                  {teamMembers.length}
+                </span>
+              )}
           </button>
         ))}
       </div>
 
       {/* Activity Log (superAdmin only) */}
-      {session.role === "superAdmin" && <ActivityLogBar log={activityLog} />}
+      {(session.role === "superAdmin" || session.role === "founder") && (
+        <ActivityLogBar log={activityLog} />
+      )}
 
       {/* Content */}
       <div
@@ -2526,30 +3242,38 @@ export default function InternalControlPage() {
         {activeTab === "products" && <ProductListTab />}
         {activeTab === "add" && <AddJewelryTab onLog={addLog} />}
         {activeTab === "prices" && <ChangePricesTab onLog={addLog} />}
-        {activeTab === "orders" && session.role === "superAdmin" && (
-          <ViewOrdersTab />
-        )}
-        {activeTab === "team" && session.role === "superAdmin" && (
-          <TeamTab
-            teamMembers={teamMembers}
-            setTeamMembers={setTeamMembers}
-            onLog={addLog}
-            currentSession={session}
-            onRevokeCurrentUser={() => handleLogout()}
-          />
-        )}
-        {activeTab === "design" && session.role === "superAdmin" && (
-          <WebsiteDesignTab />
-        )}
-        {activeTab === "settings" && session.role === "superAdmin" && (
-          <SettingsTab
-            emergencyPin={emergencyPin}
-            setEmergencyPin={setEmergencyPin}
-            onForceLogoutAll={handleForceLogoutAll}
-            masterPassword={masterPassword}
-            onMasterPasswordChange={setMasterPassword}
-          />
-        )}
+        {activeTab === "orders" &&
+          (session.role === "superAdmin" ||
+            session.role === "founder" ||
+            session.role === "coFounder") && <ViewOrdersTab />}
+        {activeTab === "team" &&
+          (session.role === "superAdmin" || session.role === "founder") && (
+            <TeamTab
+              teamMembers={teamMembers}
+              onAddMember={addTeamMember}
+              onRemoveMember={removeTeamMember}
+              onRevokeMember={revokeTeamMember}
+              onRestoreMember={restoreTeamMember}
+              onLog={addLog}
+              currentSession={session}
+              onRevokeCurrentUser={() => handleLogout()}
+            />
+          )}
+        {activeTab === "design" &&
+          (session.role === "superAdmin" ||
+            session.role === "founder" ||
+            session.role === "coFounder") && <WebsiteDesignTab />}
+        {activeTab === "reviews" && <ReviewsTab />}
+        {activeTab === "settings" &&
+          (session.role === "superAdmin" || session.role === "founder") && (
+            <SettingsTab
+              emergencyPin={emergencyPin}
+              setEmergencyPin={setEmergencyPin}
+              onForceLogoutAll={handleForceLogoutAll}
+              onMasterPasswordChange={setMasterPassword}
+              masterPassword={masterPassword}
+            />
+          )}
       </div>
     </div>
   );

@@ -45,6 +45,27 @@ export interface Order {
   isApproved: boolean;
 }
 
+export interface TeamMember {
+  gmail: string;
+  name: string;
+  role: "manager" | "viewer" | "coFounder";
+  addedAt: string;
+  isRevoked: boolean;
+  isPermanent?: boolean;
+}
+
+export interface Review {
+  id: number;
+  productId: number;
+  customerPhone: string;
+  rating: number; // 1-5
+  comment: string;
+  mediaBase64?: string;
+  mediaType?: string;
+  submittedAt: number;
+  isApproved: boolean;
+}
+
 const MOCK_PRODUCTS: Product[] = [
   {
     id: 1,
@@ -144,16 +165,43 @@ const MOCK_PRODUCTS: Product[] = [
   },
 ];
 
-const DEFAULT_SITE_IMAGES = {
-  heroUrl:
-    "/assets/generated/mishi-hero-lion-lioness-cliff-guardians.dim_1920x900.jpg",
-  logoUrl: "/assets/generated/mishi-logo-pure-transparent.dim_800x800.png",
+export const DEFAULT_SITE_IMAGES = {
+  heroUrl: "/assets/images/lion-hero.jpg",
+  logoUrl: "/assets/images/logo.png",
   necklaceImg: "/assets/generated/product-necklace-set.dim_400x500.jpg",
   ringsImg: "/assets/generated/product-chandbali.dim_400x500.jpg",
   banglesImg: "/assets/generated/product-kada.dim_400x500.jpg",
   earringsImg: "/assets/generated/product-chandbali.dim_400x500.jpg",
   ethnicImg: "/assets/generated/product-lehenga.dim_400x500.jpg",
 };
+
+export type SiteImages = typeof DEFAULT_SITE_IMAGES;
+
+export type CurrencyCode = "INR" | "USD" | "AED" | "GBP" | "EUR";
+export type LanguageCode = "English" | "Hindi" | "Arabic" | "French";
+
+export const EXCHANGE_RATES: Record<string, number> = {
+  INR: 1,
+  USD: 0.012,
+  AED: 0.044,
+  GBP: 0.0095,
+  EUR: 0.011,
+};
+
+export const CURRENCY_SYMBOLS: Record<string, string> = {
+  INR: "₹",
+  USD: "$",
+  AED: "\u062f.\u0625",
+  GBP: "£",
+  EUR: "€",
+};
+
+export function convertPrice(priceInINR: number, currency: string): string {
+  const rate = EXCHANGE_RATES[currency] ?? 1;
+  const sym = CURRENCY_SYMBOLS[currency] ?? "₹";
+  const converted = priceInINR * rate;
+  return `${sym}${converted < 100 ? converted.toFixed(2) : Math.round(converted).toLocaleString()}`;
+}
 
 interface MishiStore {
   silverRate: number;
@@ -162,22 +210,24 @@ interface MishiStore {
   wishlist: number[];
   orders: Order[];
   nextOrderId: number;
+  reviews: Review[];
+  nextReviewId: number;
   isLoggedIn: boolean;
   phone: string;
   adminLevel: "primary" | "secondary" | "customer" | null;
   currentPage: string;
-  siteImages: {
-    heroUrl: string;
-    logoUrl: string;
-    necklaceImg: string;
-    ringsImg: string;
-    banglesImg: string;
-    earringsImg: string;
-    ethnicImg: string;
-  };
-  updateSiteImage: (key: keyof MishiStore["siteImages"], value: string) => void;
-  resetProducts: () => void;
+  siteImages: SiteImages;
+  teamMembers: TeamMember[];
+  masterPassword: string;
+  currency: CurrencyCode;
+  language: LanguageCode;
+  setMasterPassword: (pw: string) => void;
+  setCurrency: (c: CurrencyCode) => void;
+  setLanguage: (l: LanguageCode) => void;
 
+  // Actions
+  updateSiteImage: (key: keyof SiteImages, value: string) => void;
+  resetSiteImages: () => void;
   setSilverRate: (rate: number) => void;
   navigate: (page: string) => void;
   addToCart: (
@@ -194,13 +244,23 @@ interface MishiStore {
   clearCart: () => void;
   placeOrder: (shippingAddress: string) => number;
   toggleWishlist: (productId: number) => void;
-  login: (phone: string) => void;
+  login: (phone: string, username?: string) => void;
   loginAsAdmin: (level: "primary" | "secondary") => void;
   logout: () => void;
   addProduct: (p: Omit<Product, "id">) => void;
   updateProduct: (id: number, updates: Partial<Product>) => void;
   advanceOrderStage: (orderId: number) => void;
   approveOrder: (orderId: number) => void;
+  // Team management
+  addTeamMember: (member: TeamMember) => void;
+  removeTeamMember: (gmail: string) => void;
+  revokeTeamMember: (gmail: string) => void;
+  restoreTeamMember: (gmail: string) => void;
+  updateTeamMemberRole: (gmail: string, role: "manager" | "viewer") => void;
+  // Review actions
+  addReview: (r: Omit<Review, "id" | "isApproved" | "submittedAt">) => void;
+  approveReview: (id: number) => void;
+  rejectReview: (id: number) => void;
 }
 
 const STAGES: OrderStage[] = [
@@ -211,6 +271,15 @@ const STAGES: OrderStage[] = [
   "palaceDelivery",
 ];
 
+const CO_FOUNDER_PERMANENT: TeamMember = {
+  gmail: "kshivani05231@gmail.com",
+  name: "Shivani",
+  role: "coFounder",
+  addedAt: "2025-01-01",
+  isRevoked: false,
+  isPermanent: true,
+};
+
 export const useMishi = create<MishiStore>()(
   persist(
     (set, get) => ({
@@ -220,20 +289,25 @@ export const useMishi = create<MishiStore>()(
       wishlist: [],
       orders: [],
       nextOrderId: 1001,
+      reviews: [],
+      nextReviewId: 1,
       isLoggedIn: false,
       phone: "",
       adminLevel: null,
       currentPage: "home",
       siteImages: DEFAULT_SITE_IMAGES,
+      teamMembers: [CO_FOUNDER_PERMANENT],
+      masterPassword: "MISHI1701",
+      currency: "INR",
+      language: "English",
 
       setSilverRate: (rate) => set({ silverRate: rate }),
       updateSiteImage: (key, value) =>
         set((state) => ({ siteImages: { ...state.siteImages, [key]: value } })),
+      resetSiteImages: () => set({ siteImages: DEFAULT_SITE_IMAGES }),
       navigate: (page) => set({ currentPage: page }),
-
-      // Force-reset products to fix any cached broken picsum URLs
-      resetProducts: () =>
-        set({ products: MOCK_PRODUCTS, siteImages: DEFAULT_SITE_IMAGES }),
+      setCurrency: (c) => set({ currency: c }),
+      setLanguage: (l) => set({ language: l }),
 
       addToCart: (productId, quantity, selectedSize) =>
         set((state) => {
@@ -320,8 +394,13 @@ export const useMishi = create<MishiStore>()(
             : [...state.wishlist, productId],
         })),
 
-      login: (phone) =>
-        set({ isLoggedIn: true, phone, adminLevel: "customer" }),
+      login: (phone, username) => {
+        if (username === "MISHI1701") {
+          set({ isLoggedIn: true, phone: username, adminLevel: "secondary" });
+        } else {
+          set({ isLoggedIn: true, phone, adminLevel: "customer" });
+        }
+      },
       loginAsAdmin: (level) =>
         set({
           isLoggedIn: true,
@@ -363,20 +442,100 @@ export const useMishi = create<MishiStore>()(
               : o,
           ),
         })),
+
+      // Team management
+      addTeamMember: (member) =>
+        set((state) => {
+          if (member.gmail === CO_FOUNDER_PERMANENT.gmail) return state;
+          return {
+            teamMembers: [
+              ...state.teamMembers.filter((m) => m.gmail !== member.gmail),
+              member,
+            ],
+          };
+        }),
+      removeTeamMember: (gmail) =>
+        set((state) => ({
+          teamMembers: state.teamMembers.filter(
+            (m) => m.gmail !== gmail || m.isPermanent,
+          ),
+        })),
+      revokeTeamMember: (gmail) =>
+        set((state) => ({
+          teamMembers: state.teamMembers.map((m) =>
+            m.gmail === gmail ? { ...m, isRevoked: true } : m,
+          ),
+        })),
+      setMasterPassword: (pw) => set({ masterPassword: pw }),
+      restoreTeamMember: (gmail) =>
+        set((state) => ({
+          teamMembers: state.teamMembers.map((m) =>
+            m.gmail === gmail ? { ...m, isRevoked: false } : m,
+          ),
+        })),
+      updateTeamMemberRole: (gmail, role) =>
+        set((state) => ({
+          teamMembers: state.teamMembers.map((m) =>
+            m.gmail === gmail ? { ...m, role } : m,
+          ),
+        })),
+
+      // Review actions
+      addReview: (r) =>
+        set((state) => ({
+          reviews: [
+            ...state.reviews,
+            {
+              ...r,
+              id: state.nextReviewId,
+              isApproved: false,
+              submittedAt: Date.now(),
+            },
+          ],
+          nextReviewId: state.nextReviewId + 1,
+        })),
+      approveReview: (id) =>
+        set((state) => ({
+          reviews: state.reviews.map((r) =>
+            r.id === id ? { ...r, isApproved: true } : r,
+          ),
+        })),
+      rejectReview: (id) =>
+        set((state) => ({
+          reviews: state.reviews.filter((r) => r.id !== id),
+        })),
     }),
     {
-      name: "mishi-store-v2", // bumped version to clear old cached broken data
+      name: "mishi-store-v6",
       partialize: (state) => ({
         cart: state.cart,
         wishlist: state.wishlist,
         orders: state.orders,
         nextOrderId: state.nextOrderId,
+        reviews: state.reviews,
+        nextReviewId: state.nextReviewId,
         isLoggedIn: state.isLoggedIn,
         phone: state.phone,
         adminLevel: state.adminLevel,
         silverRate: state.silverRate,
-        // Do NOT persist products or siteImages — always use fresh defaults
+        products: state.products,
+        siteImages: state.siteImages,
+        teamMembers: state.teamMembers,
+        masterPassword: state.masterPassword,
+        currency: state.currency,
+        language: state.language,
       }),
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          const hasCF = state.teamMembers.some(
+            (m) => m.gmail === CO_FOUNDER_PERMANENT.gmail,
+          );
+          if (!hasCF) {
+            state.teamMembers = [CO_FOUNDER_PERMANENT, ...state.teamMembers];
+          }
+          state.siteImages = DEFAULT_SITE_IMAGES;
+        }
+      },
     },
   ),
 );

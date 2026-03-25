@@ -17,6 +17,12 @@ const ShopPage = lazy(() => import("./pages/ShopPage"));
 const VaultPage = lazy(() => import("./pages/VaultPage"));
 const WishlistPage = lazy(() => import("./pages/WishlistPage"));
 
+function isInternalControlRoute(): boolean {
+  if (typeof window === "undefined") return false;
+  const p = window.location.pathname;
+  return p === "/mishi-internal-control" || p === "/admin-management";
+}
+
 function PageRouter() {
   const { currentPage } = useMishi();
   if (currentPage === "home") return <HomePage />;
@@ -33,6 +39,7 @@ function PageRouter() {
   if (currentPage === "vault") return <VaultPage />;
   if (currentPage === "admin") return <PrimaryAdminPage />;
   if (currentPage === "admin-secondary") return <SecondaryAdminPage />;
+  if (currentPage === "internal-control") return <InternalControlPage />;
   return <HomePage />;
 }
 
@@ -98,7 +105,7 @@ function PWAInstallBanner() {
       }}
     >
       <img
-        src="/assets/generated/mishi-logo-golden-final.dim_800x800.png"
+        src="/assets/images/logo.png"
         alt="MISHI"
         style={{
           width: 40,
@@ -170,11 +177,15 @@ function PWAInstallBanner() {
 }
 
 export default function App() {
-  // Isolated internal control panel — no Navbar, no Butler, no footer
-  if (
-    typeof window !== "undefined" &&
-    window.location.pathname === "/mishi-internal-control"
-  ) {
+  const { currentPage } = useMishi();
+
+  // Render InternalControlPage without Navbar/footer when:
+  // 1. Direct URL path /mishi-internal-control, OR
+  // 2. Router navigated to "internal-control"
+  const isInternalControl =
+    isInternalControlRoute() || currentPage === "internal-control";
+
+  if (isInternalControl) {
     return (
       <Suspense
         fallback={<div style={{ minHeight: "100vh", background: "#080b12" }} />}
@@ -210,7 +221,7 @@ export default function App() {
       >
         <div className="flex flex-col items-center gap-2 mb-4">
           <img
-            src="/assets/generated/mishi-logo-golden-final.dim_800x800.png"
+            src="/assets/images/logo.png"
             alt="MISHI"
             className="h-12 w-auto"
             style={{

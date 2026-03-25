@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { getProductPrice, useMishi } from "../store/store";
 
 export default function HomePage() {
@@ -6,37 +6,6 @@ export default function HomePage() {
   const featured = products.filter((p) => p.isActive).slice(0, 4);
 
   const heroRef = useRef<HTMLElement>(null);
-  const bgImgRef = useRef<HTMLImageElement>(null);
-  const mouseOffsetRef = useRef({ x: 0, y: 0 });
-
-  useEffect(() => {
-    const hero = heroRef.current;
-    if (!hero) return;
-    const applyTransform = () => {
-      const scrollY = window.scrollY;
-      const { x: xBg, y: yBg } = mouseOffsetRef.current;
-      const scrollOffset = scrollY * 0.2;
-      if (bgImgRef.current) {
-        bgImgRef.current.style.transform = `translate(calc(-50% + ${xBg}px), calc(-50% + ${yBg - scrollOffset}px))`;
-      }
-    };
-    const handleMouseMove = (e: MouseEvent) => {
-      const rect = hero.getBoundingClientRect();
-      const cx = rect.width / 2;
-      const cy = rect.height / 2;
-      const dx = (e.clientX - rect.left - cx) / cx;
-      const dy = (e.clientY - rect.top - cy) / cy;
-      mouseOffsetRef.current = { x: dx * -14, y: dy * -10 };
-      applyTransform();
-    };
-    const handleScroll = () => applyTransform();
-    hero.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => {
-      hero.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, []);
 
   const categories = [
     {
@@ -55,7 +24,7 @@ export default function HomePage() {
       id: "legacy",
       label: "MISHI Legacy",
       sub: "Our story, our roots, our vision",
-      img: "/assets/generated/mishi-hero-lion-lioness-cliff-guardians.dim_1920x900.jpg",
+      img: "https://images.unsplash.com/photo-1546182990-dffeafbe841d?auto=format&fit=crop&w=1920&q=80",
       isLegacy: true,
     },
   ];
@@ -82,25 +51,15 @@ export default function HomePage() {
           justifyContent: "center",
         }}
       >
-        {/* Parallax background — Lion & Lioness Guardians on cliff under golden sunrise */}
-        <img
-          ref={bgImgRef}
-          src={siteImages.heroUrl}
-          alt="Lion and Lioness Guardians on cliff under golden sunrise — MISHI"
-          loading="eager"
-          fetchPriority="high"
+        {/* Hero background — Lion & Lioness Guardians on cliff under golden sunrise */}
+        <div
           style={{
             position: "absolute",
-            left: "50%",
-            top: "50%",
-            transform: "translate(-50%, -50%)",
-            width: "115%",
-            height: "115%",
-            objectFit: "cover",
-            objectPosition: "center 40%",
+            inset: 0,
+            backgroundImage: `url('${siteImages.heroUrl || "/assets/images/lion-hero.jpg"}')`,
+            backgroundSize: "cover",
+            backgroundPosition: "center 40%",
             filter: "brightness(1.05) saturate(1.2)",
-            transition: "transform 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
-            willChange: "transform",
           }}
         />
 
@@ -137,7 +96,7 @@ export default function HomePage() {
         >
           {/* MISHI logo — transparent PNG, golden wreath floats directly on hero background */}
           <img
-            src={siteImages.logoUrl}
+            src="/assets/images/logo.png"
             alt="MISHI SM Wreath Logo"
             style={{
               height: 90,
@@ -148,6 +107,7 @@ export default function HomePage() {
               background: "transparent",
               border: "none",
               boxShadow: "none",
+
               filter:
                 "drop-shadow(0 0 12px rgba(255,215,0,0.95)) drop-shadow(0 2px 8px rgba(60,0,100,0.8))",
             }}

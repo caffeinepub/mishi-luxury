@@ -40,6 +40,8 @@ function detectSection(scrollY: number): Section {
 export default function FounderGuides() {
   const { navigate } = useMishi();
   const [visible, setVisible] = useState(true);
+  const [_mohitError, setMohitError] = useState(false);
+  const [_shivaniError, setShivaniError] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [bubbleOpen, setBubbleOpen] = useState(false);
   const [section, setSection] = useState<Section>("hero");
@@ -287,8 +289,11 @@ export default function FounderGuides() {
             }}
           >
             <img
-              src="/assets/generated/mohit-anime-guide-transparent.dim_400x700.png"
+              src="/assets/images/mohit-guide.png"
+              loading="eager"
+              fetchPriority="high"
               alt="Mohit"
+              onError={() => setMohitError(true)}
               style={{
                 width: 90,
                 height: 120,
@@ -304,7 +309,10 @@ export default function FounderGuides() {
               }}
             />
             <img
-              src="/assets/generated/shivani-anime-guide-transparent.dim_400x700.png"
+              src="/assets/images/shivani-guide.png"
+              loading="eager"
+              onError={() => setShivaniError(true)}
+              fetchPriority="high"
               alt="Shivani"
               style={{
                 width: 90,
@@ -413,7 +421,9 @@ export default function FounderGuides() {
         {/* Stacked avatar thumbnails */}
         <div style={{ position: "relative", width: 44, height: 52 }}>
           <img
-            src="/assets/generated/mohit-anime-guide-transparent.dim_400x700.png"
+            src="/assets/images/mohit-guide.png"
+            loading="eager"
+            fetchPriority="high"
             alt="Mohit"
             style={{
               position: "absolute",
@@ -428,7 +438,9 @@ export default function FounderGuides() {
             }}
           />
           <img
-            src="/assets/generated/shivani-anime-guide-transparent.dim_400x700.png"
+            src="/assets/images/shivani-guide.png"
+            loading="eager"
+            fetchPriority="high"
             alt="Shivani"
             style={{
               position: "absolute",

@@ -1,3 +1,5 @@
+import { useState } from "react";
+import InvoiceModal from "../components/InvoiceModal";
 import {
   type OrderStage,
   STAGE_ICONS,
@@ -15,6 +17,7 @@ const STAGES: OrderStage[] = [
 
 export default function OrdersPage() {
   const { orders, navigate, isLoggedIn } = useMishi();
+  const [invoiceOrderId, setInvoiceOrderId] = useState<number | null>(null);
 
   if (!isLoggedIn)
     return (
@@ -59,6 +62,13 @@ export default function OrdersPage() {
 
   return (
     <div className="min-h-screen pt-24 px-6 pb-20 max-w-4xl mx-auto">
+      {invoiceOrderId !== null && (
+        <InvoiceModal
+          orderId={invoiceOrderId}
+          onClose={() => setInvoiceOrderId(null)}
+        />
+      )}
+
       <p className="text-xs tracking-[0.4em] text-yellow-400 uppercase mb-2">
         Royal Tracking
       </p>
@@ -75,8 +85,15 @@ export default function OrdersPage() {
         {[...orders].reverse().map((order) => {
           const stageIdx = STAGES.indexOf(order.stage);
           return (
-            <div key={order.id} className="glass-card p-6">
-              <div className="flex justify-between items-start mb-6">
+            <div
+              key={order.id}
+              className="glass-card p-6"
+              data-ocid={`orders.item.${order.id}`}
+            >
+              <div
+                className="flex justify-between items-start mb-4"
+                style={{ flexWrap: "wrap", gap: 12 }}
+              >
                 <div>
                   <h3
                     style={{ fontFamily: "Playfair Display, serif" }}
@@ -108,9 +125,62 @@ export default function OrdersPage() {
                 </div>
               </div>
 
+              {/* QR + Invoice row */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 16,
+                  marginBottom: 20,
+                  padding: "12px 16px",
+                  background: "rgba(212,175,55,0.05)",
+                  borderRadius: 8,
+                  border: "1px solid rgba(212,175,55,0.15)",
+                  flexWrap: "wrap",
+                }}
+              >
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(`ORDER_${order.id}`)}`}
+                  alt="Order QR"
+                  loading="eager"
+                  width={80}
+                  height={80}
+                  style={{
+                    borderRadius: 6,
+                    border: "1px solid rgba(212,175,55,0.3)",
+                    flexShrink: 0,
+                  }}
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = "none";
+                  }}
+                />
+                <div style={{ flex: 1 }}>
+                  <p className="text-gray-400 text-xs mb-1">
+                    Scan QR or view full invoice
+                  </p>
+                  <button
+                    type="button"
+                    data-ocid="orders.invoice.primary_button"
+                    onClick={() => setInvoiceOrderId(order.id)}
+                    style={{
+                      background:
+                        "linear-gradient(135deg, rgba(212,175,55,0.2), rgba(240,208,96,0.15))",
+                      border: "1px solid rgba(212,175,55,0.4)",
+                      borderRadius: "6px",
+                      padding: "6px 14px",
+                      color: "#D4AF37",
+                      fontSize: "13px",
+                      cursor: "pointer",
+                      fontWeight: 600,
+                    }}
+                  >
+                    📄 View Invoice / QR
+                  </button>
+                </div>
+              </div>
+
               {/* Royal Timeline */}
               <div className="relative">
-                {/* Line */}
                 <div
                   className="absolute top-6 left-0 right-0 h-0.5"
                   style={{ background: "rgba(212,175,55,0.2)" }}
@@ -170,7 +240,6 @@ export default function OrdersPage() {
                 </div>
               </div>
 
-              {/* Current Stage Banner */}
               <div
                 className="mt-6 p-3 rounded-lg text-center text-sm"
                 style={{
@@ -184,7 +253,6 @@ export default function OrdersPage() {
                 </span>
               </div>
 
-              {/* Shipping */}
               <p className="text-xs text-gray-500 mt-3">
                 📦 {order.shippingAddress}
               </p>

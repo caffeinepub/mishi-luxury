@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { getProductPrice, useMishi } from "../store/store";
+import { convertPrice, getProductPrice, useMishi } from "../store/store";
 
 export default function ShopPage() {
   const {
@@ -9,6 +9,7 @@ export default function ShopPage() {
     toggleWishlist,
     wishlist,
     navigate,
+    currency,
   } = useMishi();
   const [cat, setCat] = useState<"all" | "silver" | "ethnic">("all");
   const filtered = products.filter(
@@ -59,7 +60,9 @@ export default function ShopPage() {
           <span className="text-xs tracking-widest text-gray-400 uppercase">
             Live Silver Rate ·{" "}
           </span>
-          <span className="gold-text font-semibold">₹{silverRate}/gram</span>
+          <span className="gold-text font-semibold">
+            {convertPrice(silverRate, currency)}/gram
+          </span>
           <span className="text-xs text-gray-500 ml-2">
             · Prices update in real-time
           </span>
@@ -69,7 +72,7 @@ export default function ShopPage() {
       {/* Grid */}
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {filtered.map((p) => {
-          const price = getProductPrice(p, silverRate);
+          const priceINR = getProductPrice(p, silverRate);
           const wished = wishlist.includes(p.id);
           return (
             <div
@@ -94,6 +97,11 @@ export default function ShopPage() {
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   loading="lazy"
                   decoding="async"
+                  style={{ imageRendering: "auto" }}
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src =
+                      "/assets/uploads/Snapchat-1589822426-4-1.jpg";
+                  }}
                 />
                 <button
                   type="button"
@@ -142,14 +150,11 @@ export default function ShopPage() {
                 </p>
                 {p.category === "silver" && p.silverWeight && (
                   <p className="text-xs text-gray-500 mb-2">
-                    {p.silverWeight}g × ₹{silverRate} + base ={" "}
-                    <span style={{ color: "#3d0070", fontWeight: 700 }}>
-                      ₹{price.toLocaleString("en-IN")}
-                    </span>
+                    {p.silverWeight}g × {convertPrice(silverRate, currency)} +
+                    base
                   </p>
                 )}
                 <div className="flex items-center justify-between">
-                  {/* PRICE — Deep Royal Purple override */}
                   <span
                     className="gold-text font-bold text-lg"
                     style={{
@@ -159,7 +164,7 @@ export default function ShopPage() {
                       WebkitTextFillColor: "#3d0070",
                     }}
                   >
-                    ₹{price.toLocaleString("en-IN")}
+                    {convertPrice(priceINR, currency)}
                   </span>
                   <button
                     type="button"

@@ -1,6 +1,7 @@
 import { ArrowLeft, Heart, ShoppingBag } from "lucide-react";
 import { useState } from "react";
-import { getProductPrice, useMishi } from "../store/store";
+import ReviewSection from "../components/ReviewSection";
+import { convertPrice, getProductPrice, useMishi } from "../store/store";
 
 export default function ProductDetailPage({
   productId,
@@ -12,6 +13,7 @@ export default function ProductDetailPage({
     toggleWishlist,
     wishlist,
     navigate,
+    currency,
   } = useMishi();
   const p = products.find((pr) => pr.id === productId);
   const [qty, setQty] = useState(1);
@@ -25,7 +27,7 @@ export default function ProductDetailPage({
       </div>
     );
 
-  const price = getProductPrice(p, silverRate);
+  const priceINR = getProductPrice(p, silverRate);
   const wished = wishlist.includes(p.id);
 
   const handleAdd = () => {
@@ -52,8 +54,13 @@ export default function ProductDetailPage({
             src={p.imageUrl}
             alt={p.name}
             className="w-full h-full object-cover"
-            loading="lazy"
+            loading="eager"
             decoding="async"
+            style={{ imageRendering: "auto" }}
+            onError={(e) => {
+              (e.target as HTMLImageElement).src =
+                "/assets/uploads/Snapchat-1589822426-4-1.jpg";
+            }}
           />
         </div>
         <div className="flex flex-col justify-center">
@@ -92,22 +99,23 @@ export default function ProductDetailPage({
                 <div className="flex justify-between">
                   <span className="text-gray-400">Base Craftsmanship</span>
                   <span className="text-amber-100">
-                    ₹{(p.basePrice || 0).toLocaleString("en-IN")}
+                    {convertPrice(p.basePrice || 0, currency)}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-400">
-                    {p.silverWeight}g × ₹{silverRate} (Live Rate)
+                    {p.silverWeight}g × {convertPrice(silverRate, currency)}{" "}
+                    (Live Rate)
                   </span>
                   <span className="text-amber-100">
-                    ₹{(p.silverWeight * silverRate).toLocaleString("en-IN")}
+                    {convertPrice(p.silverWeight * silverRate, currency)}
                   </span>
                 </div>
                 <div className="royal-divider" />
                 <div className="flex justify-between">
                   <span className="gold-text font-semibold">Total</span>
                   <span className="gold-text font-bold text-lg">
-                    ₹{price.toLocaleString("en-IN")}
+                    {convertPrice(priceINR, currency)}
                   </span>
                 </div>
               </div>
@@ -120,21 +128,21 @@ export default function ProductDetailPage({
                 Select Size
               </p>
               <div className="flex flex-wrap gap-2">
-                {p.sizes.map((s) => (
+                {p.sizes.map((sz) => (
                   <button
                     type="button"
-                    key={s.size}
-                    onClick={() => setSize(s.size)}
-                    disabled={s.stock === 0}
+                    key={sz.size}
+                    onClick={() => setSize(sz.size)}
+                    disabled={sz.stock === 0}
                     className={`px-4 py-2 text-sm border rounded-md transition-all ${
-                      size === s.size
+                      size === sz.size
                         ? "border-yellow-400 text-yellow-400 bg-yellow-400/10"
-                        : s.stock === 0
+                        : sz.stock === 0
                           ? "border-gray-700 text-gray-600 cursor-not-allowed"
                           : "border-gray-600 text-gray-300 hover:border-yellow-400 hover:text-yellow-400"
                     }`}
                   >
-                    {s.size}
+                    {sz.size}
                   </button>
                 ))}
               </div>
@@ -143,11 +151,10 @@ export default function ProductDetailPage({
 
           {p.category !== "ethnic" && (
             <p className="text-2xl gold-text font-bold mb-6">
-              ₹{price.toLocaleString("en-IN")}
+              {convertPrice(priceINR, currency)}
             </p>
           )}
 
-          {/* Quantity */}
           <div className="flex items-center gap-4 mb-6">
             <div className="flex items-center glass-card rounded-lg overflow-hidden">
               <button
@@ -168,7 +175,7 @@ export default function ProductDetailPage({
             </div>
             {p.category === "ethnic" && p.sizes.length > 0 && (
               <p className="text-2xl gold-text font-bold">
-                ₹{price.toLocaleString("en-IN")}
+                {convertPrice(priceINR, currency)}
               </p>
             )}
           </div>
@@ -177,6 +184,7 @@ export default function ProductDetailPage({
             <button
               type="button"
               onClick={handleAdd}
+              data-ocid="product.primary_button"
               className="flex-1 btn-gold flex items-center justify-center gap-2 py-3"
             >
               <ShoppingBag size={18} />
@@ -185,6 +193,7 @@ export default function ProductDetailPage({
             <button
               type="button"
               onClick={() => toggleWishlist(p.id)}
+              data-ocid="product.secondary_button"
               className="w-12 h-12 flex items-center justify-center glass-card hover:border-red-400 transition-colors"
             >
               <Heart
@@ -196,6 +205,9 @@ export default function ProductDetailPage({
           </div>
         </div>
       </div>
+
+      {/* Reviews Section */}
+      <ReviewSection productId={p.id} />
     </div>
   );
 }

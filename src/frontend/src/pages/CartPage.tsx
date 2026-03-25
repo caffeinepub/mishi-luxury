@@ -1,6 +1,7 @@
 import { ShoppingBag, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { getProductPrice, useMishi } from "../store/store";
+import InvoiceModal from "../components/InvoiceModal";
+import { convertPrice, getProductPrice, useMishi } from "../store/store";
 
 export default function CartPage() {
   const {
@@ -12,18 +13,20 @@ export default function CartPage() {
     placeOrder,
     navigate,
     isLoggedIn,
+    currency,
   } = useMishi();
   const [address, setAddress] = useState("");
   const [ordered, setOrdered] = useState(false);
   const [orderId, setOrderId] = useState(0);
+  const [showInvoice, setShowInvoice] = useState(false);
 
   const enriched = cart.map((ci) => {
     const p = products.find((pr) => pr.id === ci.productId);
-    const price = p ? getProductPrice(p, silverRate) : 0;
-    return { ...ci, product: p, price };
+    const priceINR = p ? getProductPrice(p, silverRate) : 0;
+    return { ...ci, product: p, priceINR };
   });
 
-  const total = enriched.reduce((s, i) => s + i.price * i.quantity, 0);
+  const totalINR = enriched.reduce((s, i) => s + i.priceINR * i.quantity, 0);
 
   const handleOrder = () => {
     if (!isLoggedIn) {
@@ -34,11 +37,21 @@ export default function CartPage() {
     const id = placeOrder(address);
     setOrderId(id);
     setOrdered(true);
+    setShowInvoice(true);
   };
 
   if (ordered)
     return (
       <div className="min-h-screen pt-24 flex items-center justify-center px-6">
+        {showInvoice && (
+          <InvoiceModal
+            orderId={orderId}
+            onClose={() => {
+              setShowInvoice(false);
+              navigate("orders");
+            }}
+          />
+        )}
         <div className="glass-card p-12 text-center max-w-md w-full">
           <div className="text-6xl mb-4">👑</div>
           <h2
@@ -58,15 +71,45 @@ export default function CartPage() {
               fontSize: "1.1rem",
               fontStyle: "italic",
             }}
-            className="text-gray-400 mb-8"
+            className="text-gray-400 mb-4"
           >
             Our artisans have been notified. Your order will be crafted with
             utmost care.
           </p>
+          <div
+            className="text-center mb-6"
+            style={{
+              padding: "16px",
+              background: "rgba(212,175,55,0.05)",
+              borderRadius: 8,
+              border: "1px solid rgba(212,175,55,0.2)",
+            }}
+          >
+            <img
+              src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(`https://mishiluxury.app/orders/${orderId}`)}`}
+              alt="Order QR"
+              loading="eager"
+              width={120}
+              height={120}
+              style={{ margin: "0 auto", display: "block", borderRadius: 6 }}
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = "none";
+              }}
+            />
+            <p className="text-gray-400 text-xs mt-2">Scan to track order</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowInvoice(true)}
+            className="btn-gold w-full py-3 mb-3"
+            data-ocid="cart.invoice.primary_button"
+          >
+            📄 View Invoice
+          </button>
           <button
             type="button"
             onClick={() => navigate("orders")}
-            className="btn-gold w-full py-3 mb-3"
+            className="btn-outline-gold w-full py-3 mb-3"
           >
             Track My Order
           </button>
@@ -125,6 +168,11 @@ export default function CartPage() {
                     src={item.product.imageUrl}
                     alt={item.product.name}
                     className="w-20 h-24 object-cover rounded-lg"
+                    loading="lazy"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src =
+                        "/assets/uploads/Snapchat-1589822426-4-1.jpg";
+                    }}
                   />
                   <div className="flex-1">
                     <h3
@@ -142,7 +190,7 @@ export default function CartPage() {
                       </p>
                     )}
                     <p className="gold-text font-semibold mt-1">
-                      ₹{item.price.toLocaleString("en-IN")}
+                      {convertPrice(item.priceINR, currency)}
                     </p>
                     <div className="flex items-center gap-3 mt-2">
                       <div className="flex items-center glass-card rounded overflow-hidden">
@@ -189,7 +237,7 @@ export default function CartPage() {
                   </div>
                   <div className="text-right">
                     <p className="gold-text font-bold">
-                      ₹{(item.price * item.quantity).toLocaleString("en-IN")}
+                      {convertPrice(item.priceINR * item.quantity, currency)}
                     </p>
                   </div>
                 </div>
@@ -215,7 +263,7 @@ export default function CartPage() {
                         {item.product.name} ×{item.quantity}
                       </span>
                       <span className="text-amber-100">
-                        ₹{(item.price * item.quantity).toLocaleString("en-IN")}
+                        {convertPrice(item.priceINR * item.quantity, currency)}
                       </span>
                     </div>
                   ),
@@ -224,7 +272,7 @@ export default function CartPage() {
               <div className="flex justify-between font-bold">
                 <span className="gold-text">Total</span>
                 <span className="gold-text text-lg">
-                  ₹{total.toLocaleString("en-IN")}
+                  {convertPrice(totalINR, currency)}
                 </span>
               </div>
             </div>
@@ -247,12 +295,14 @@ export default function CartPage() {
                 border: "1px solid rgba(212,175,55,0.3)",
                 borderRadius: "8px",
                 padding: "10px",
+                boxSizing: "border-box",
               }}
             />
             <button
               type="button"
               onClick={handleOrder}
               disabled={!address.trim()}
+              data-ocid="cart.submit_button"
               className="btn-gold w-full py-3 mt-3 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Place Royal Order
